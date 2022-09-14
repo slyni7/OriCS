@@ -1,0 +1,39 @@
+﻿{
+	"repos": [
+		{
+			"url": "https://github.com/JSY1728/EDOPRO-Korean-CDB-TEST",
+			"repo_name": "Project Ignis 한국어 패치",
+			"repo_path": "./repositories/languages/한국어",
+			"is_language": true,
+			"language": "한국어",
+			"should_update": true,
+			"should_read": true
+		},
+		{
+			"url": "https://github.com/slyni7/OriCS",
+			"repo_name": "OriCS",
+			"repo_path": "./repositories/OriCS",
+			"data_path": "",
+			"should_update": true,
+			"should_read": true
+		},
+		{
+			"url": "https://github.com/slyni7/OriCS-lflist",
+			"repo_name": "OriCS 리미트 레귤레이션",
+			"repo_path": "./repositories/OriCS-lflist",
+			"lflist_path": ".",
+			"should_update": true,
+			"should_read": true
+		}
+	],
+	"servers": [
+		{
+			"name": "오릿카 서버",
+			"address": "cs.orikka.o-r.kr",
+			"duelport": 10000,
+			"roomaddress": "cs.orikka.o-r.kr",
+			"roomlistprotocol": "http",
+			"roomlistport": 20000
+		}
+	]
+}
