@@ -17,7 +17,7 @@ function s.tar1(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 		return chkc:IsOnField() and chkc:IsFaceup() and chkc~=c
 	end
 	if chk==0 then
-		return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil)
+		return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,c)
 	end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
 	local g=Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
