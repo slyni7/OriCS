@@ -1,1 +1,1 @@
-sqlite3 OriCS-7urikamom3.cdb ".read Anime.sql"
+sqlite3 OriCS-MoKa.cdb ".read Anime.sql"
