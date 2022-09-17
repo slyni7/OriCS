@@ -18,6 +18,7 @@ function cm.initial_effect(c)
 	e3:SetType(EFFECT_TYPE_QUICK_O)
 	e3:SetCode(EVENT_FREE_CHAIN)
 	e3:SetRange(LOCATION_GRAVE)
+	e3:SetCountLimit(1,m)
 	e3:SetHintTiming(0,TIMING_MAIN_END+TIMING_END_PHASE)
 	e3:SetTarget(cm.sptg)
 	e3:SetOperation(cm.spop)
@@ -76,7 +77,7 @@ function cm.spop(e,tp,eg,ep,ev,re,r,rp)
 		Duel.SpecialSummon(c,0,tp,tp,true,false,POS_FACEUP)
 	end
 	Duel.BreakEffect()
-	local tc=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.spfilter2),tp,LOCATION_HAND+LOCATION_GRAVE,0,1,1,nil):GetFirst()
+	local tc=Duel.SelectMatchingCard(tp,cm.spfilter2,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil):GetFirst()
 	if tc and tc:IsSSetable() and Duel.SSet(tp,tc)>0 then
 		--Can be activated this turn
 		local e1=Effect.CreateEffect(e:GetHandler())
