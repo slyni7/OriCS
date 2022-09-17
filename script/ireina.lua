@@ -1939,7 +1939,7 @@ function Card.RegisterEffect(c,e,forced,...)
 end
 if not Duel.Exile then
 	function Duel.Exile(g,r)
-		return Duel.SendtoDeck(g,nil,2,r)
+		return Duel.SendtoDeck(g,nil,-2,r)
 	end
 end
 
