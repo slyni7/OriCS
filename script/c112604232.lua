@@ -12,10 +12,11 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_QUICK_O)
+	e2:SetRange(LOCATION_GRAVE)
 	e2:SetCode(EVENT_FREE_CHAIN)
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e2:SetCountLimit(1,{id,1},EFFECT_COUNT_CODE_OATH)
-	e2:SetCondition(Duel.IsMainPhase)
+	e2:SetCondition(s.descon)
 	e2:SetTarget(s.tar2)
 	e2:SetOperation(s.op2)
 	c:RegisterEffect(e2)
@@ -49,7 +50,7 @@ function s.op2(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.GetLocationCount(1-tp,LOCATION_MZONE,tp)<=0
 		or not Duel.IsPlayerCanSpecialSummonMonster(tp,id,0xe70,0x21,0,0,7,RACE_CYBERSE,ATTRIBUTE_DARK,1-tp) then return end
 	c:AddMonsterAttribute(TYPE_EFFECT)
-	Duel.SpecialSummonStep(c,0,tp,tp,true,false,POS_FACEUP)
+	Duel.SpecialSummonStep(c,0,tp,1-tp,true,false,POS_FACEUP)
 	c:AddMonsterAttributeComplete()
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
@@ -87,4 +88,7 @@ function s.oop22(e,tp,eg,ep,ev,re,r,rp)
 	if c:IsRelateToEffect(e) then
 		Duel.Destroy(c,REASON_EFFECT)
 	end
+end
+function s.descon()
+	return Duel.IsMainPhase()
 end

@@ -20,7 +20,7 @@ function s.tar1(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 		return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,c)
 	end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
-	local g=Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
+	local g=Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,c)
 end
 function s.nfil111(c)
 	return c:IsFaceup() and c:IsCode(112601198)
@@ -29,7 +29,7 @@ function s.nfil112(c)
 	return c:IsFaceup() and c:IsSetCard(0xe90) and c:IsType(TYPE_MONSTER)
 end
 function s.tfil11(c)
-	return c:IsAbleToHand() and c:IsSetCard(0xe90) and c:IsType(TYPE_SPELL) and not c:IsCode(id)
+	return c:IsAbleToHand() and c:IsSetCard(0xe90) and c:IsType(TYPE_SPELL) and not c:IsCode(112604230)
 end
 function s.nfil121(c)
 	return c:IsFaceup() and c:IsSetCard(0xe70)
@@ -37,7 +37,7 @@ end
 function s.nfil122(c)
 	return c:IsFaceup() and c:IsSetCard(0xe72) and c:IsType(TYPE_MONSTER)
 end
-function s.tfil11(c)
+function s.tfil12(c)
 	return c:IsAbleToGrave() and c:IsSetCard(0xe70)
 end
 function s.op1(e,tp,eg,ep,ev,re,r,rp)
