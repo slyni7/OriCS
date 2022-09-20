@@ -88,8 +88,12 @@ function Card.CopyEffect(c,code,...)
 	Auxiliary.CopyingCode=nil
 	return res
 end
+Auxiliary.IreinaCurrentXyzHandler=nil
 function Auxiliary.WriteIreinaEffect(e,i,s)
 	local c=e:GetOwner()
+	if not c then
+		c=Auxiliary.IreinaCurrentXyzHandler
+	end
 	local code=c:GetOriginalCode()
 	if Auxiliary.CopyingCode then
 		code=Auxiliary.CopyingCode
@@ -149,6 +153,9 @@ function WriteEff(...)
 end
 function Auxiliary.MakeIreinaEffect(c,t,r)
 	local e=Effect.CreateEffect(c)
+	if Auxiliary.EffTypStrToNum(t)&EFFECT_TYPE_XMATERIAL~=0 then
+		Auxiliary.IreinaCurrentXyzHandler=c
+	end
 	e:SetT(t)
 	if r then
 		e:SetR(r)
