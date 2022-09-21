@@ -11,8 +11,10 @@ function cm.initial_effect(c)
 	c:RegisterEffect(e1)
 	
 	--서치 부여
-	local e2=MakeEff(c,"XFTo","M")
+	local e2=Effect.CreateEffect()
 	e2:SetD(m,0)
+	e2:SetType(EFFECT_TYPE_XMATERIAL+EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
+	e2:SetRange(LOCATION_MZONE)
 	e2:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND)
 	e2:SetCode(EVENT_PHASE+PHASE_END)
 	e2:SetCL(1)
