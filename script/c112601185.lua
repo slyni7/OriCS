@@ -79,7 +79,7 @@ end
 
 --tohand
 function cm.thfilter(c)
-	return c:IsSetCard(0xe90) or c:IsSetCard(0xe70) and c:IsAbleToHand()
+	return (c:IsSetCard(0xe90) or c:IsSetCard(0xe70)) and c:IsAbleToHand()
 end
 function cm.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(cm.thfilter,tp,LOCATION_DECK,0,1,nil) end

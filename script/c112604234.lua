@@ -65,7 +65,7 @@ end
 function s.con2(e,tp,eg,ep,ev,re,r,rp)
 	return rp~=tp and re:IsHasType(EFFECT_TYPE_ACTIVATE)
 end
-function s.nfil3(c)
+function s.nfil3(c,tp)
 	return c:IsPreviousControler(1-tp)
 end
 function s.con3(e,tp,eg,ep,ev,re,r,rp)

@@ -23,7 +23,7 @@ function s.initial_effect(c)
 end
 function s.filter(c)
 	return ((c:IsLocation(LOCATION_DECK) and (c:IsSetCard(0xe72) or c:IsSetCard(0xe70)) and not c:IsCode(id))
-		or c:IsSetCard(0xe90))
+		or (c:IsSetCard(0xe90) and c:IsMonster()))
 		and c:IsAbleToHand()
 end
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)

@@ -50,8 +50,8 @@ function cm.initial_effect(c)
 end
 
 --Activate
-function cm.spfilter0(c)
-	return (c:IsSetCard(0xe90) and c:IsLevel(1)) or (c:IsSetCard(0xe72) and c:GetLevel()<4) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+function cm.spfilter0(c,e,tp)
+	return (c:IsSetCard(0xe90) and c:IsLevel(1)) or (c:IsSetCard(0xe72) and c:GetLevel()<=4) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
 function cm.spop(e,tp,eg,ep,ev,re,r,rp)
 	if not e:GetHandler():IsRelateToEffect(e) then return end
