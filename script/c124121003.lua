@@ -34,7 +34,7 @@ end
 s.listed_names={id,124121002}
 s.listed_series={0xfa0}
 function s.cfilter(c)
-	return c:IsSetCard(0xfa0) and c:IsDiscardable()
+	return (c:IsSetCard(0xfa0) or c:IsCode(id)) and c:IsDiscardable()
 end
 function s.tkcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_HAND,0,1,nil)
