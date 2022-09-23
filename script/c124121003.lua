@@ -22,7 +22,6 @@ function s.initial_effect(c)
 	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_SZONE)
-	e2:SetCountLimit(1,{id,1})
 	e2:SetCost(s.accost)
 	e2:SetTarget(s.actg)
 	e2:SetOperation(s.acop)
@@ -108,5 +107,5 @@ function s.acop(e,tp,eg,ep,ev,re,r,rp)
 		if #sg>0 then
 			Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEUP,0x60)
 		end
-	end	
+	end 
 end
