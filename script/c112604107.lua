@@ -30,8 +30,8 @@ function cm.initial_effect(c)
 	e6:SetCode(EVENT_FREE_CHAIN)
 	e6:SetHintTiming(0,TIMINGS_CHECK_MONSTER+TIMING_MAIN_END)
 	e6:SetCountLimit(1)
-	e6:SetTarget(cm.sptg)
-	e6:SetOperation(cm.spop)
+	e6:SetTarget(cm.hdtg)
+	e6:SetOperation(cm.hdop)
 	c:RegisterEffect(e6)
 end
 
@@ -68,8 +68,8 @@ end
 function cm.hdop(e,tp,eg,ep,ev,re,r,rp)
 	if not e:GetHandler():IsRelateToEffect(e) then return end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-	local g=Duel.SelectMatchingCard(tp,cm.hdfilter,tp,LOCATION_HAND,0,1,1,nil,e,tp)
-	if g:GetCount()>0 then
-		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
+	local g2=Duel.SelectMatchingCard(tp,cm.hdfilter,tp,LOCATION_HAND,0,1,1,nil,e,tp)
+	if g2:GetCount()>0 then
+		Duel.SpecialSummon(g2,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

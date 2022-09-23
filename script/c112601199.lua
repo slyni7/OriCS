@@ -15,7 +15,7 @@ function cm.initial_effect(c)
 	e4:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e4:SetType(EFFECT_TYPE_ACTIVATE)
 	e4:SetCode(EVENT_FREE_CHAIN)
-	e4:SetCountLimit(1,m)
+	e4:SetCountLimit(1,{m,1},EFFECT_COUNT_CODE_OATH)
 	e4:SetOperation(cm.spop)
 	c:RegisterEffect(e4)
 	--indes
