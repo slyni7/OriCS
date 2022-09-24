@@ -236,7 +236,7 @@ function Card.RegisterEffect(c,e,forced,...)
 				--for i,eff in ipairs(ZeronierTable) do
 				--	if eff==se then return false end
 				--end
-			return Duel.GetFlagEffect(tp,c:GetOriginalCode()+99000351)==0
+			return Duel.GetFlagEffect(sump,c:GetOriginalCode()+99000351)==0
 			end)
 		else
 			e:SetTarget(function(e,c,sump,sumtype,sumpos,targetp,se)
@@ -244,7 +244,7 @@ function Card.RegisterEffect(c,e,forced,...)
 				--	if eff==re or not target(e,c,sump,sumtype,sumpos,targetp,se) then return false end
 				--end
 			return target(e,c,sump,sumtype,sumpos,targetp,se)
-				and Duel.GetFlagEffect(tp,c:GetOriginalCode()+99000351)==0
+				and Duel.GetFlagEffect(sump,c:GetOriginalCode()+99000351)==0
 			end)
 		end
 	end
