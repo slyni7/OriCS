@@ -1,5 +1,7 @@
 --変性ゼリッピ
-function c112400003.initial_effect(c)
+local s,id=c112400003,112400003
+if GetID() then s,id=GetID() end
+function s.initial_effect(c)
 	--re0(cannot be xyz material)
 	local re0=Effect.CreateEffect(c)
 	re0:SetType(EFFECT_TYPE_SINGLE)
@@ -14,17 +16,17 @@ function c112400003.initial_effect(c)
 	re1:SetType(EFFECT_TYPE_SINGLE)
 	re1:SetCode(EFFECT_CANNOT_BE_FUSION_MATERIAL)
 	re1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
-	re1:SetValue(c112400003.fuslimit)
+	re1:SetValue(s.fuslimit)
 	c:RegisterEffect(re1)
 	--me1(fus mat)
 	local me1=Effect.CreateEffect(c)
-	me1:SetDescription(aux.Stringid(112400003,0))
+	me1:SetDescription(aux.Stringid(id,0))
 	me1:SetType(EFFECT_TYPE_IGNITION)
 	me1:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	me1:SetRange(LOCATION_MZONE)
 	me1:SetCountLimit(1)
-	me1:SetTarget(c112400003.fmtg)
-	me1:SetOperation(c112400003.fmop)
+	me1:SetTarget(s.fmtg)
+	me1:SetOperation(s.fmop)
 	c:RegisterEffect(me1)
 	--pe1(def up)
 	local pe1=Effect.CreateEffect(c)
@@ -32,41 +34,41 @@ function c112400003.initial_effect(c)
 	pe1:SetCode(EFFECT_UPDATE_DEFENSE)
 	pe1:SetRange(LOCATION_PZONE)
 	pe1:SetTargetRange(LOCATION_ONFIELD,0)
-	pe1:SetTarget(aux.TargetBoolFunction(c112400003.deffilter))
-	pe1:SetValue(c112400003.defvalue)
+	pe1:SetTarget(aux.TargetBoolFunction(s.deffilter))
+	pe1:SetValue(s.defvalue)
 	c:RegisterEffect(pe1)
 	--pe2(dest toh)
 	local pe2=Effect.CreateEffect(c)
-	pe2:SetDescription(aux.Stringid(112400003,1))
+	pe2:SetDescription(aux.Stringid(id,1))
 	pe2:SetCategory(CATEGORY_DESTROY+CATEGORY_TOHAND)
 	pe2:SetType(EFFECT_TYPE_IGNITION)
 	pe2:SetRange(LOCATION_PZONE)
-	pe2:SetCountLimit(1,112400003)
-	--pe2:SetCondition(c112400003.thcon)
-	pe2:SetTarget(c112400003.thtg)
-	pe2:SetOperation(c112400003.thop)
+	pe2:SetCountLimit(1,id)
+	--pe2:SetCondition(s.thcon)
+	pe2:SetTarget(s.thtg)
+	pe2:SetOperation(s.thop)
 	c:RegisterEffect(pe2)
 end
-c112400003.listed_series={0x4ec1,0x8ec1}
+s.listed_series={0x4ec1,0x8ec1}
 --re1(fusion limit) --2017.6.15 errata
-function c112400003.fuslimit(e,c)
+function s.fuslimit(e,c)
 	if not c then return false end
 	return not c:IsSetCard(0x4ec1) and not c:IsSetCard(0x8ec1)
 end
 --me1(fus mat)
-function c112400003.fmfilter(c,tc)
+function s.fmfilter(c,tc)
 	local code1,code2=c:GetCode()
 	return c:IsSetCard(0x4ec1) and c:IsFaceup() and ((not tc:IsCode(code1)) or (code2 and not tc:IsCode(code2)))
 end
-function c112400003.fmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+function s.fmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local c=e:GetHandler()
 	if chkc then return chkc~=c and chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp)
-		and c112400003.fmfilter(chkc,c) end
-	if chk==0 then return Duel.IsExistingTarget(c112400003.fmfilter,tp,LOCATION_MZONE,0,1,c,c) end
+		and s.fmfilter(chkc,c) end
+	if chk==0 then return Duel.IsExistingTarget(s.fmfilter,tp,LOCATION_MZONE,0,1,c,c) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
-	Duel.SelectTarget(tp,c112400003.fmfilter,tp,LOCATION_MZONE,0,1,1,c,c)
+	Duel.SelectTarget(tp,s.fmfilter,tp,LOCATION_MZONE,0,1,1,c,c)
 end
-function c112400003.fmop(e,tp,eg,ep,ev,re,r,rp)
+function s.fmop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) or c:IsFacedown() or c:IsImmuneToEffect(e) then return end
 	local tc=Duel.GetFirstTarget()
@@ -86,26 +88,26 @@ function c112400003.fmop(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 --pe1(def up)
-function c112400003.deffilter(c)
+function s.deffilter(c)
 	return c:IsFaceup() and c:IsType(TYPE_MONSTER) and c:IsSetCard(0x4ec1)
 end
-function c112400003.defvalue(e,c)
+function s.defvalue(e,c)
 	return Duel.GetFieldGroup(e:GetHandlerPlayer(),LOCATION_ONFIELD,0):FilterCount(Card.IsType,nil,TYPE_MONSTER)*100
 end
 --pe2(dest toh)
-function c112400003.thfilter(c,code1,code2)
+function s.thfilter(c,code1,code2)
 	return c:IsFaceup() and c:IsSetCard(0x4ec1) and bit.band(c:GetType(),0x1000001)==0x1000001
 		and c:IsAbleToHand() and not c:IsCode(code1,code2)
 end
-function c112400003.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
+function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	local pc=Duel.GetFirstMatchingCard(aux.TRUE,tp,LOCATION_PZONE,0,c)
-	if chk==0 then return pc and Duel.IsExistingMatchingCard(c112400003.thfilter,tp,LOCATION_EXTRA,0,2,nil,c:GetCode(),pc:GetCode()) end
+	if chk==0 then return pc and Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_EXTRA,0,2,nil,c:GetCode(),pc:GetCode()) end
 	local g=Group.FromCards(c,pc)
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,2,0,0)
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,2,tp,LOCATION_EXTRA)
 end
-function c112400003.thop(e,tp,eg,ep,ev,re,r,rp)
+function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
 	local pc=Duel.GetFirstMatchingCard(aux.TRUE,tp,LOCATION_PZONE,0,c)
@@ -113,7 +115,7 @@ function c112400003.thop(e,tp,eg,ep,ev,re,r,rp)
 	local dg=Group.FromCards(c,pc)
 	if Duel.Destroy(dg,REASON_EFFECT)~=2 then return end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
-	local g=Duel.SelectMatchingCard(tp,c112400003.thfilter,tp,LOCATION_EXTRA,0,2,2,nil,c:GetCode(),pc:GetCode())
+	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_EXTRA,0,2,2,nil,c:GetCode(),pc:GetCode())
 	if #g==2 then
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
 		Duel.ConfirmCards(1-tp,g)

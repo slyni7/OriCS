@@ -1,12 +1,14 @@
 --ゼリーキング
 --CARD_BLUEEYES_SPIRIT	=59822133
 --CARD_SUMMON_GATE		=29724053
-function c112400010.initial_effect(c)
+local s,id=c112400010,112400010
+if GetID() then s,id=GetID() end
+function s.initial_effect(c)
 	--synchro summon
 	if Synchro then
-		Synchro.AddProcedure(c,c112400010.sstfilter,1,1,aux.FilterBoolFunctionEx(Card.IsSetCard,0x4ec1),1,99)
+		Synchro.AddProcedure(c,s.sstfilter,1,1,aux.FilterBoolFunctionEx(Card.IsSetCard,0x4ec1),1,99)
 	else
-		aux.AddSynchroProcedure(c,c112400010.sstfilter,aux.FilterBoolFunction(Card.IsSetCard,0x4ec1),1)
+		aux.AddSynchroProcedure(c,s.sstfilter,aux.FilterBoolFunction(Card.IsSetCard,0x4ec1),1)
 	end
 	c:EnableReviveLimit()
 	--pendulum summon
@@ -17,43 +19,43 @@ function c112400010.initial_effect(c)
 	me1:SetCode(EFFECT_DEFENSE_ATTACK)
 	me1:SetRange(LOCATION_MZONE)
 	me1:SetTargetRange(LOCATION_ONFIELD,0)
-	me1:SetTarget(aux.TargetBoolFunction(c112400010.me1filter))
+	me1:SetTarget(aux.TargetBoolFunction(s.me1filter))
 	me1:SetValue(1)
 	c:RegisterEffect(me1)
 	--me2(draw 1~2 cards)
 	local me2=Effect.CreateEffect(c)
-	me2:SetDescription(aux.Stringid(112400010,0))
+	me2:SetDescription(aux.Stringid(id,0))
 	me2:SetCategory(CATEGORY_REMOVE)
 	me2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	me2:SetCode(EVENT_SPSUMMON_SUCCESS)
 	me2:SetProperty(EFFECT_FLAG_DELAY)
-	me2:SetCondition(c112400010.drcon)
-	me2:SetTarget(c112400010.drtg)
-	me2:SetOperation(c112400010.drop)
+	me2:SetCondition(s.drcon)
+	me2:SetTarget(s.drtg)
+	me2:SetOperation(s.drop)
 	c:RegisterEffect(me2)
 	--me3(spsummon 1~4 monsters)
 	local me3=Effect.CreateEffect(c)
-	me3:SetDescription(aux.Stringid(112400010,1))
+	me3:SetDescription(aux.Stringid(id,1))
 	me3:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	me3:SetType(EFFECT_TYPE_IGNITION)
 	me3:SetRange(LOCATION_MZONE)
-	me3:SetCountLimit(1,112400010)
-	me3:SetTarget(c112400010.sptg)
-	me3:SetOperation(c112400010.spop)
+	me3:SetCountLimit(1,id)
+	me3:SetTarget(s.sptg)
+	me3:SetOperation(s.spop)
 	c:RegisterEffect(me3)
 	--me4(retuning synchro)
 	local me4=Effect.CreateEffect(c)
-	me4:SetDescription(aux.Stringid(112400010,2))
+	me4:SetDescription(aux.Stringid(id,2))
 	me4:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	me4:SetType(EFFECT_TYPE_IGNITION)
 	me4:SetRange(LOCATION_MZONE)
-	me4:SetTarget(c112400010.syntg)
-	me4:SetOperation(c112400010.synop)
+	me4:SetTarget(s.syntg)
+	me4:SetOperation(s.synop)
 	c:RegisterEffect(me4)
 	--pe1(multiple pendulum)
 	local pe1=Effect.CreateEffect(c)
 	if not Pendulum then --KoishiPro or Core
-		pe1:SetDescription(aux.Stringid(112400010,4))
+		pe1:SetDescription(aux.Stringid(id,4))
 		pe1:SetType(EFFECT_TYPE_FIELD)
 		pe1:SetCode(EFFECT_EXTRA_PENDULUM_SUMMON)
 		pe1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -64,7 +66,7 @@ function c112400010.initial_effect(c)
 	else --EDOPro
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_FIELD)
-		e1:SetCode(112400010)
+		e1:SetCode(id)
 		e1:SetRange(LOCATION_PZONE)
 		e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 		e1:SetTargetRange(1,0)
@@ -73,55 +75,55 @@ function c112400010.initial_effect(c)
 		pe1:SetCode(EVENT_ADJUST)
 		pe1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 		pe1:SetRange(LOCATION_PZONE)
-		pe1:SetCondition(c112400010.checkcon)
-		pe1:SetOperation(c112400010.checkop)
+		pe1:SetCondition(s.checkcon)
+		pe1:SetOperation(s.checkop)
 		c:RegisterEffect(pe1)
 	end
 	--pe2(spsummon 1~3 monsters)
 	local pe2=Effect.CreateEffect(c)
-	pe2:SetDescription(aux.Stringid(112400010,3))
+	pe2:SetDescription(aux.Stringid(id,3))
 	pe2:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	pe2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	pe2:SetCode(EVENT_SPSUMMON_SUCCESS)
 	pe2:SetProperty(EFFECT_FLAG_DELAY)
 	pe2:SetRange(LOCATION_PZONE)
-	pe2:SetCondition(c112400010.pe2con)
-	pe2:SetTarget(c112400010.pe2tg)
-	pe2:SetOperation(c112400010.pe2op)
+	pe2:SetCondition(s.pe2con)
+	pe2:SetTarget(s.pe2tg)
+	pe2:SetOperation(s.pe2op)
 	c:RegisterEffect(pe2)
 end
-c112400010.listed_series={0x4ec1}
-c112400010.listed_names={112400002,112400011}
-c112400010.card_code_list={[112400002]=true,[112400011]=true}
-c112400010.material_setcode=0x4ec1
+s.listed_series={0x4ec1}
+s.listed_names={112400002,112400011}
+s.card_code_list={[112400002]=true,[112400011]=true}
+s.material_setcode=0x4ec1
 --synchro summon
-function c112400010.sstfilter(c,sc,sumtype,tp)
+function s.sstfilter(c,sc,sumtype,tp)
 	return c:IsSetCard(0x4ec1,sc,sumtype,tp) or c:IsHasEffect(112400008)
 end
 --me1(attack in def pos)
-function c112400010.me1filter(c)
+function s.me1filter(c)
 	return c:IsFaceup() and c:IsType(TYPE_MONSTER) and c:IsSetCard(0x4ec1)
 end
 --me2(draw 1~2 cards)
-function c112400010.drcon(e,tp,eg,ep,ev,re,r,rp)
+function s.drcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetSummonType()==SUMMON_TYPE_SYNCHRO
 end
-function c112400010.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
+function s.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
 	Duel.SetTargetPlayer(tp)
 	Duel.SetTargetParam(1)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
-function c112400010.cffilter(c)
+function s.cffilter(c)
 	return c:IsSetCard(0x4ec1) and not c:IsPublic()
 end
-function c112400010.drop(e,tp,eg,ep,ev,re,r,rp)
+function s.drop(e,tp,eg,ep,ev,re,r,rp)
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	if Duel.Draw(p,d,REASON_EFFECT)>0 and Duel.IsExistingMatchingCard(c112400010.cffilter,tp,LOCATION_HAND,0,3,nil)
-		and Duel.IsPlayerCanDraw(tp,1) and Duel.SelectYesNo(tp,aux.Stringid(112400010,11)) then
+	if Duel.Draw(p,d,REASON_EFFECT)>0 and Duel.IsExistingMatchingCard(s.cffilter,tp,LOCATION_HAND,0,3,nil)
+		and Duel.IsPlayerCanDraw(tp,1) and Duel.SelectYesNo(tp,aux.Stringid(id,11)) then
 			Duel.BreakEffect()
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)
-			local cg=Duel.SelectMatchingCard(tp,c112400010.cffilter,tp,LOCATION_HAND,0,3,3,nil)
+			local cg=Duel.SelectMatchingCard(tp,s.cffilter,tp,LOCATION_HAND,0,3,3,nil)
 			if #cg>2 then
 				Duel.ConfirmCards(1-tp,cg)
 				Duel.ShuffleHand(tp)
@@ -130,25 +132,25 @@ function c112400010.drop(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 --me3(spsummon 1~4 monsters)
-function c112400010.exfilter1(c)
+function s.exfilter1(c)
 	return c:IsLocation(LOCATION_EXTRA) and c:IsFaceup() and c:IsType(TYPE_PENDULUM)
 end
-function c112400010.spfilter(c,e,tp)
+function s.spfilter(c,e,tp)
 	return c:GetDefense()==1700 and c:IsLevelBelow(4)
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE)
-		and (not c:IsLocation(LOCATION_EXTRA) or c112400010.exfilter1(c))
+		and (not c:IsLocation(LOCATION_EXTRA) or s.exfilter1(c))
 end
-function c112400010.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
+function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		local loc=0
 		if Duel.GetMZoneCount(tp)>0 then loc=loc+LOCATION_HAND+LOCATION_DECK end
 		if Duel.GetLocationCountFromEx(tp,tp,nil,TYPE_PENDULUM+TYPE_LINK)>0 then loc=loc+LOCATION_EXTRA end
 		return loc~=0
-			and Duel.IsExistingMatchingCard(c112400010.spfilter,tp,loc,0,1,nil,e,tp)
+			and Duel.IsExistingMatchingCard(s.spfilter,tp,loc,0,1,nil,e,tp)
 	end
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_DECK+LOCATION_EXTRA)
 end
-function c112400010.spop(e,tp,eg,ep,ev,re,r,rp)
+function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local ft1=Duel.GetMZoneCount(tp)
 	local ft2=Duel.GetLocationCountFromEx(tp,tp,nil,TYPE_PENDULUM+TYPE_LINK)
 	local ft=math.min(4,Duel.GetUsableMZoneCount(tp))
@@ -164,12 +166,12 @@ function c112400010.spop(e,tp,eg,ep,ev,re,r,rp)
 	local ect=_G["c"..(CARD_SUMMON_GATE or 29724053)] and Duel.IsPlayerAffectedByEffect(tp,CARD_SUMMON_GATE or 29724053) and (_G["c"..(CARD_SUMMON_GATE or 29724053)])[tp]
 	if ect~=nil then ft2=math.min(ft2,ect) else ect=ft end
 	local ct=4
-	local sg=Duel.GetMatchingGroup(c112400010.spfilter,tp,loc,0,nil,e,tp)
+	local sg=Duel.GetMatchingGroup(s.spfilter,tp,loc,0,nil,e,tp)
 	if #sg==0 then return end
 		if aux.SelectUnselectGroup then --EDOPro
 			local rescon=function(ft1,ft2,ect,ft)
 				return	function(sg,e,tp,mg)
-							local expct=sg:FilterCount(c112400010.exfilter1,nil)
+							local expct=sg:FilterCount(s.exfilter1,nil)
 							local mct=sg:FilterCount(aux.NOT(Card.IsLocation),nil,LOCATION_EXTRA)
 							local exct=sg:FilterCount(Card.IsLocation,nil,LOCATION_EXTRA)
 							local groupcount=#sg
@@ -184,7 +186,7 @@ function c112400010.spop(e,tp,eg,ep,ev,re,r,rp)
 			local gcheck=function(g,ft1,ft2,ect,ft)
 				return g:GetClassCount(Card.GetLevel)==#g and #g<=ft
 					and g:FilterCount(Card.IsLocation,nil,LOCATION_DECK)<=ft1
-					and g:FilterCount(c112400010.exfilter1,nil)<=ft2
+					and g:FilterCount(s.exfilter1,nil)<=ft2
 					and g:FilterCount(Card.IsLocation,nil,LOCATION_EXTRA)<=ect
 			end
 			local rg=sg:SelectSubGroup(tp,gcheck,false,1,4,ft1,ft2,ect,ft)
@@ -192,21 +194,21 @@ function c112400010.spop(e,tp,eg,ep,ev,re,r,rp)
 		end
 end
 --me4(retuning synchro)
-function c112400010.synfilter(c,e,tp)
+function s.synfilter(c,e,tp)
 	return c:IsCode(112400011) and c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_SYNCHRO,tp,false,false)
 		and e:GetHandler():IsCanBeSynchroMaterial(c)
 end
-function c112400010.syntg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsExistingMatchingCard(c112400010.synfilter,tp,LOCATION_EXTRA,0,1,nil,e,tp)
+function s.syntg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return Duel.IsExistingMatchingCard(s.synfilter,tp,LOCATION_EXTRA,0,1,nil,e,tp)
 		and Duel.GetLocationCountFromEx(tp,tp,e:GetHandler(),TYPE_SYNCHRO)>0 end
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
-function c112400010.synop(e,tp,eg,ep,ev,re,r,rp)
+function s.synop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if Duel.GetLocationCountFromEx(tp,tp,c,TYPE_SYNCHRO)<1 then return end
 	if c:IsFacedown() or not c:IsRelateToEffect(e) or c:IsImmuneToEffect(e) then return end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-	local g=Duel.SelectMatchingCard(tp,c112400010.synfilter,tp,LOCATION_EXTRA,0,1,1,nil,e,tp)
+	local g=Duel.SelectMatchingCard(tp,s.synfilter,tp,LOCATION_EXTRA,0,1,1,nil,e,tp)
 	local tc=g:GetFirst()
 	if tc then
 		tc:SetMaterial(Group.FromCards(c))
@@ -216,7 +218,8 @@ function c112400010.synop(e,tp,eg,ep,ev,re,r,rp)
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CANNOT_BE_SYNCHRO_MATERIAL)
-		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
+		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_CLIENT_HINT)
+		e1:SetDescription(3310)
 		e1:SetValue(1)
 		e1:SetReset(RESET_EVENT+0x1fe0000+RESET_PHASE+PHASE_END)
 		tc:RegisterEffect(e1)
@@ -225,45 +228,45 @@ function c112400010.synop(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 --pe1(multiple pendulum) (EDOPro)
-function c112400010.checkcon(e)
-	return Duel.IsPlayerAffectedByEffect(e:GetHandlerPlayer(),112400010)
+function s.checkcon(e)
+	return Duel.IsPlayerAffectedByEffect(e:GetHandlerPlayer(),id)
 end
-function c112400010.checkop(e,tp)
+function s.checkop(e,tp)
 	local lpz=Duel.GetFieldCard(tp,LOCATION_PZONE,0)
-	if lpz~=nil and lpz:GetFlagEffect(112400010)<=0 then
+	if lpz~=nil and lpz:GetFlagEffect(id)<=0 then
 		local e1=Effect.CreateEffect(e:GetHandler())
-		e1:SetDescription(aux.Stringid(112400010,4))
+		e1:SetDescription(aux.Stringid(id,4))
 		e1:SetType(EFFECT_TYPE_FIELD)
 		e1:SetCode(EFFECT_SPSUMMON_PROC_G)
 		e1:SetProperty(EFFECT_FLAG_UNCOPYABLE+EFFECT_FLAG_CANNOT_DISABLE)
 		e1:SetRange(LOCATION_PZONE)
-		e1:SetCondition(c112400010.pencon)
-		e1:SetOperation(c112400010.penop)
+		e1:SetCondition(s.pencon)
+		e1:SetOperation(s.penop)
 		e1:SetValue(SUMMON_TYPE_PENDULUM)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		lpz:RegisterEffect(e1)
-		lpz:RegisterFlagEffect(112400010,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
+		lpz:RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
 	end
 	local olpz=Duel.GetFieldCard(1-tp,LOCATION_PZONE,0)
 	if olpz~=nil and olpz:GetFlagEffect(112400011)<=0 and olpz:GetFlagEffect(31531170)>0 then
 		local e2=Effect.CreateEffect(e:GetHandler())
-		e2:SetDescription(aux.Stringid(112400010,4))
+		e2:SetDescription(aux.Stringid(id,4))
 		e2:SetType(EFFECT_TYPE_FIELD)
 		e2:SetCode(EFFECT_SPSUMMON_PROC_G)
 		e2:SetProperty(EFFECT_FLAG_UNCOPYABLE+EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_BOTH_SIDE)
 		e2:SetRange(LOCATION_PZONE)
-		e2:SetCondition(c112400010.pencon2)
-		e2:SetOperation(c112400010.penop2)
+		e2:SetCondition(s.pencon2)
+		e2:SetOperation(s.penop2)
 		e2:SetValue(SUMMON_TYPE_PENDULUM)
 		e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 		olpz:RegisterEffect(e2)
 		olpz:RegisterFlagEffect(112400011,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
 	end
 end
-function c112400010.pencon(e,c,og)
+function s.pencon(e,c,og)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	if not Duel.IsPlayerAffectedByEffect(tp,112400010) then return false end
+	if not Duel.IsPlayerAffectedByEffect(tp,id) then return false end
 	local rpz=Duel.GetFieldCard(tp,LOCATION_PZONE,1)
 	if rpz==nil or c==rpz or Duel.GetFlagEffect(tp,29432356)>0 then return false end
 	local lscale=c:GetLeftScale()
@@ -281,7 +284,7 @@ function c112400010.pencon(e,c,og)
 	end
 	return g:IsExists(Pendulum and Pendulum.Filter or aux.PConditionFilter,1,nil,e,tp,lscale,rscale)
 end
-function c112400010.penop(e,tp,eg,ep,ev,re,r,rp,c,sg,og)
+function s.penop(e,tp,eg,ep,ev,re,r,rp,c,sg,og)
 	local rpz=Duel.GetFieldCard(tp,LOCATION_PZONE,1)
 	local lscale=c:GetLeftScale()
 	local rscale=rpz:GetRightScale()
@@ -363,15 +366,15 @@ function c112400010.penop(e,tp,eg,ep,ev,re,r,rp,c,sg,og)
 	end
 	if #sg>0 then
 		Duel.RegisterFlagEffect(tp,29432356,RESET_PHASE+PHASE_END+RESET_SELF_TURN,0,1)
-		Duel.Hint(HINT_CARD,0,112400010)
+		Duel.Hint(HINT_CARD,0,id)
 		Duel.HintSelection(Group.FromCards(c))
 		Duel.HintSelection(Group.FromCards(rpz))
 	end
 end
-function c112400010.pencon2(e,c,og)
+function s.pencon2(e,c,og)
 	if c==nil then return true end
 	local tp=e:GetOwnerPlayer()
-	if not Duel.IsPlayerAffectedByEffect(tp,112400010) then return false end
+	if not Duel.IsPlayerAffectedByEffect(tp,id) then return false end
 	local rpz=Duel.GetFieldCard(1-tp,LOCATION_PZONE,1)
 	if rpz==nil or rpz:GetFieldID()~=c:GetFlagEffectLabel(31531170) or Duel.GetFlagEffect(tp,29432356)>0 then return false end
 	local lscale=c:GetLeftScale()
@@ -386,7 +389,7 @@ function c112400010.pencon2(e,c,og)
 		return Duel.IsExistingMatchingCard(pfilter,tp,LOCATION_EXTRA,0,1,nil,e,tp,lscale,rscale)
 	end
 end
-function c112400010.penop2(e,tp,eg,ep,ev,re,r,rp,c,sg,og)
+function s.penop2(e,tp,eg,ep,ev,re,r,rp,c,sg,og)
 	local tp=e:GetOwnerPlayer()
 	local rpz=Duel.GetFieldCard(1-tp,LOCATION_PZONE,1)
 	local lscale=c:GetLeftScale()
@@ -411,7 +414,7 @@ function c112400010.penop2(e,tp,eg,ep,ev,re,r,rp,c,sg,og)
 		end
 	end
 	if #sg>0 then
-		Duel.Hint(HINT_CARD,0,112400010)
+		Duel.Hint(HINT_CARD,0,id)
 		Duel.Hint(HINT_CARD,0,31531170)
 		Duel.RegisterFlagEffect(tp,29432356,RESET_PHASE+PHASE_END+RESET_SELF_TURN,0,1)
 		Duel.HintSelection(Group.FromCards(c))
@@ -419,13 +422,13 @@ function c112400010.penop2(e,tp,eg,ep,ev,re,r,rp,c,sg,og)
 	end
 end
 --pe2(spsummon 1~3 "Jellypi")
-function c112400010.pe2filter(c,tp)
+function s.pe2filter(c,tp)
 	return c:GetSummonPlayer()==tp and c:GetSummonType()==SUMMON_TYPE_PENDULUM
 end
-function c112400010.pe2con(e,tp,eg,ep,ev,re,r,rp)
-	return eg:IsExists(c112400010.pe2filter,1,nil,tp)
+function s.pe2con(e,tp,eg,ep,ev,re,r,rp)
+	return eg:IsExists(s.pe2filter,1,nil,tp)
 end
-function c112400010.pe2spfilter(c,e,tp)
+function s.pe2spfilter(c,e,tp)
 	if not (c:IsCode(112400002) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)) then return false end
 	if c:IsLocation(LOCATION_EXTRA) then
 		return Duel.GetLocationCountFromEx(tp,tp,nil,c)>0
@@ -433,19 +436,19 @@ function c112400010.pe2spfilter(c,e,tp)
 		return Duel.GetMZoneCount(tp)>0
 	end
 end
-function c112400010.pe2tg(e,tp,eg,ep,ev,re,r,rp,chk)
+function s.pe2tg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
-		return e:GetHandler():IsRelateToEffect(e) and Duel.IsExistingMatchingCard(c112400010.pe2spfilter,tp,LOCATION_DECK+LOCATION_EXTRA,0,1,nil,e,tp)
+		return e:GetHandler():IsRelateToEffect(e) and Duel.IsExistingMatchingCard(s.pe2spfilter,tp,LOCATION_DECK+LOCATION_EXTRA,0,1,nil,e,tp)
 	end
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK+LOCATION_EXTRA)
 end
-function c112400010.exfilter2(c)
+function s.exfilter2(c)
 	return c:IsLocation(LOCATION_EXTRA) and c:IsFacedown() and not c:IsType(TYPE_LINK)
 end
-function c112400010.exfilter3(c)
+function s.exfilter3(c)
 	return c:IsLocation(LOCATION_EXTRA) and (c:IsType(TYPE_LINK) or c:IsFaceup())
 end
-function c112400010.pe2op(e,tp,eg,ep,ev,re,r,rp)
+function s.pe2op(e,tp,eg,ep,ev,re,r,rp)
 	if not e:GetHandler():IsRelateToEffect(e) then return end
 	local ft1=Duel.GetMZoneCount(tp)
 	local ft2=Duel.GetLocationCountFromEx(tp,tp,nil,TYPE_FUSION+TYPE_SYNCHRO+TYPE_XYZ)
@@ -462,13 +465,13 @@ function c112400010.pe2op(e,tp,eg,ep,ev,re,r,rp)
 	if ft1>0 then loc=loc+LOCATION_DECK end
 	if ect>0 and (ft2>0 or ft3>0) then loc=loc+LOCATION_EXTRA end
 	if loc==0 then return end
-	local sg=Duel.GetMatchingGroup(c112400010.pe2spfilter,tp,loc,0,nil,e,tp)
+	local sg=Duel.GetMatchingGroup(s.pe2spfilter,tp,loc,0,nil,e,tp)
 	if #sg==0 then return end
 	if aux.SelectUnselectGroup then --EDOPro
 		local rescon=function(ft1,ft2,ft3,ect,ft)
 			return	function(sg,e,tp,mg)
-						local exnpct=sg:FilterCount(c112400010.exfilter2,nil,LOCATION_EXTRA)
-						local expct=sg:FilterCount(c112400010.exfilter3,nil,LOCATION_EXTRA)
+						local exnpct=sg:FilterCount(s.exfilter2,nil,LOCATION_EXTRA)
+						local expct=sg:FilterCount(s.exfilter3,nil,LOCATION_EXTRA)
 						local mct=sg:FilterCount(aux.NOT(Card.IsLocation),nil,LOCATION_EXTRA)
 						local exct=sg:FilterCount(Card.IsLocation,nil,LOCATION_EXTRA)
 						local groupcount=#sg
@@ -482,8 +485,8 @@ function c112400010.pe2op(e,tp,eg,ep,ev,re,r,rp)
 		local gcheck=function(g,ft1,ft2,ft3,ect,ft)
 			return #g<=ft
 				and g:FilterCount(Card.IsLocation,nil,LOCATION_DECK)<=ft1
-				and g:FilterCount(c112400010.exfilter2,nil)<=ft2
-				and g:FilterCount(c112400010.exfilter3,nil)<=ft3
+				and g:FilterCount(s.exfilter2,nil)<=ft2
+				and g:FilterCount(s.exfilter3,nil)<=ft3
 				and g:FilterCount(Card.IsLocation,nil,LOCATION_EXTRA)<=ect
 		end
 		local rg=sg:SelectSubGroup(tp,gcheck,false,1,3,ft1,ft2,ft3,ect,ft)
