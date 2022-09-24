@@ -28,29 +28,13 @@ function c84320033.initial_effect(c)
 	c:RegisterEffect(e2)
 end
 function c84320033.seqcon(e,tp,eg,ep,ev,re,r,rp)
-	local seq=e:GetHandler():GetSequence()
-	return (seq>0 and Duel.CheckLocation(tp,LOCATION_MZONE,seq-1))
-		or (seq<4 and Duel.CheckLocation(tp,LOCATION_MZONE,seq+1))
+	return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 end
 function c84320033.seqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) or c:IsControler(1-tp) then return end
-	local seq=c:GetSequence()
-	if (seq>0 and Duel.CheckLocation(tp,LOCATION_MZONE,seq-1))
-		or (seq<4 and Duel.CheckLocation(tp,LOCATION_MZONE,seq+1)) then
-		local flag=0
-		if seq>0 and Duel.CheckLocation(tp,LOCATION_MZONE,seq-1) then flag=bit.bor(flag,bit.lshift(0x1,seq-1)) end
-		if seq<4 and Duel.CheckLocation(tp,LOCATION_MZONE,seq+1) then flag=bit.bor(flag,bit.lshift(0x1,seq+1)) end
-		flag=bit.bxor(flag,0xff)
-		local s=Duel.SelectDisableField(tp,1,LOCATION_MZONE,0,flag)
-		local nseq=0
-		if s==1 then nseq=0
-		elseif s==2 then nseq=1
-		elseif s==4 then nseq=2
-		elseif s==8 then nseq=3
-		else nseq=4 end
-		Duel.MoveSequence(c,nseq)
-	end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOZONE)
+	Duel.MoveSequence(c,math.log(Duel.SelectDisableField(tp,1,LOCATION_MZONE,0,0),2))
 end
 
 
@@ -61,25 +45,13 @@ function c84320033.setcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
 function c84320033.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-   if chk==0 then return true end
-   local seq=e:GetHandler():GetSequence()
-   local g=Group.CreateGroup()
-   local tc=Duel.GetFieldCard(tp,LOCATION_SZONE,seq)
-   if tc then g:AddCard(tc) end
-   tc=Duel.GetFieldCard(1-tp,LOCATION_MZONE,4-seq)
-   if tc then g:AddCard(tc) end
-   tc=Duel.GetFieldCard(1-tp,LOCATION_SZONE,4-seq)
-   if tc then g:AddCard(tc) end
+   local c=e:GetHandler()
+   local g=c:GetColumnGroup()
+   if chk==0 then return #g>0 end
    Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
 function c84320033.activate(e,tp,eg,ep,ev,re,r,rp)
-   local seq=e:GetHandler():GetSequence()
-   local g=Group.CreateGroup()
-   local tc=Duel.GetFieldCard(tp,LOCATION_SZONE,seq)
-   if tc then g:AddCard(tc) end
-   tc=Duel.GetFieldCard(1-tp,LOCATION_MZONE,4-seq)
-   if tc then g:AddCard(tc) end
-   tc=Duel.GetFieldCard(1-tp,LOCATION_SZONE,4-seq)
-   if tc then g:AddCard(tc) end
+   local c=e:GetHandler()
+   local g=c:GetColumnGroup()
    Duel.Destroy(g,REASON_EFFECT)
 end
