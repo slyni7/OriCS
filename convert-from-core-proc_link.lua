@@ -51,3 +51,4 @@ function Auxiliary.LCheckGoal(sg,tp,lc,gf,lmat)
 end
 
 Duel.GetLinkedZone=aux.GetMMZonesPointedTo
+Card.IsLinkState=Card.IsLinked
