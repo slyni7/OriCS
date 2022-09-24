@@ -49,3 +49,5 @@ function Auxiliary.LCheckGoal(sg,tp,lc,gf,lmat)
 		and not sg:IsExists(Auxiliary.LUncompatibilityFilter,1,nil,sg,lc,tp)
 		and (not lmat or sg:IsContains(lmat))
 end
+
+Duel.GetLinkedZone=aux.GetMMZonesPointedTo

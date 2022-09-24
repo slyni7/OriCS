@@ -7,8 +7,6 @@ function cm.initial_effect(c)
 	kaos.C1tYPop(c)
 	--to grave
 	kaos.UNEVER(c)
-	--limit
-	kaos.EVERWORLD(c)
 	--remove
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(m,2))
