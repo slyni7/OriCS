@@ -84,5 +84,5 @@ function s.repval(e,c)
 	return s.repfilter(c,e:GetHandlerPlayer())
 end
 function s.repop(e,tp,eg,ep,ev,re,r,rp)
-	Duel.SendtoDeck(e:GetHandler(),POS_FACEUP,2,REASON_EFFECT)
+	Duel.SendtoDeck(e:GetHandler(),nil,2,REASON_EFFECT)
 end

@@ -3,7 +3,6 @@ local s,id=GetID()
 function s.initial_effect(c)
 	local e1=MakeEff(c,"Qo","M")
 	e1:SetCode(EVENT_FREE_CHAIN)
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetCL(1,id)
 	WriteEff(e1,1,"NCTO")
 	c:RegisterEffect(e1)
@@ -24,7 +23,6 @@ function s.tar1(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		return Duel.IEMCard(s.tfil1,tp,"D",0,1,nil)
 	end
-	Duel.SOI(0,CATEGORY_TOHAND,nil,1,tp,"D")
 end
 function s.ofil1(c,e,tp)
 	return c:IsCanBeSpecialSummoned(e,0,tp,false,false) and c:IsSetCard("절대영초") and not c:IsCode(id)
