@@ -104,6 +104,6 @@ function s.ocon31(e)
 	local ct=e:GetLabel()
 	return Duel.GetTurnCount()~=ct
 end
-function s.tar31(e,c)
+function s.otar31(e,c)
 	return c:IsSetCard(0xfa1)
 end
