@@ -160,7 +160,7 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 		ft=1
 	end
 	local loc=0
-	if ft1>0 then loc=loc+LOCATION_DECK end
+	if ft1>0 then loc=loc+LOCATION_HAND+LOCATION_DECK end
 	if ft2>0 then loc=loc+LOCATION_EXTRA end
 	if loc==0 then return end
 	local ect=_G["c"..(CARD_SUMMON_GATE or 29724053)] and Duel.IsPlayerAffectedByEffect(tp,CARD_SUMMON_GATE or 29724053) and (_G["c"..(CARD_SUMMON_GATE or 29724053)])[tp]
@@ -185,7 +185,7 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 		else --KoishiPro
 			local gcheck=function(g,ft1,ft2,ect,ft)
 				return g:GetClassCount(Card.GetLevel)==#g and #g<=ft
-					and g:FilterCount(Card.IsLocation,nil,LOCATION_DECK)<=ft1
+					and g:FilterCount(Card.IsLocation,nil,LOCATION_HAND+LOCATION_DECK)<=ft1
 					and g:FilterCount(s.exfilter1,nil)<=ft2
 					and g:FilterCount(Card.IsLocation,nil,LOCATION_EXTRA)<=ect
 			end

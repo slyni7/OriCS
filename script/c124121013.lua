@@ -5,35 +5,34 @@ function s.initial_effect(c)
 	Synchro.AddProcedure(c,aux.FilterBoolFunctionEx(Card.IsSetCard,0xfa1),1,1,aux.TRUE,1,1)
 	c:EnableReviveLimit()
 	--synchro level
+	local e1=Effect.CreateEffect(c)
+	e1:SetType(EFFECT_TYPE_FIELD)
+	e1:SetCode(EFFECT_SYNCHRO_MATERIAL_CUSTOM)
+	e1:SetRange(LOCATION_EXTRA)
+	e1:SetTargetRange(0,LOCATION_MZONE)
+	e1:SetOperation(s.synop)
+	c:RegisterEffect(e1)
+	--Return 1 opponent's card to Deck
+	local e2=Effect.CreateEffect(c)
+	--e2:SetDescription(aux.Stringid(id,0))
+	e2:SetCategory(CATEGORY_TOGRAVE+CATEGORY_TODECK)
+	e2:SetType(EFFECT_TYPE_QUICK_O)
+	e2:SetCode(EVENT_PHASE+PHASE_END)
+	e2:SetRange(LOCATION_MZONE)
+	e2:SetCountLimit(1,id)
+	e2:SetTarget(s.target)
+	e2:SetOperation(s.operation)
+	c:RegisterEffect(e2)
+	--Banish itself
 	local e3=Effect.CreateEffect(c)
-	e3:SetType(EFFECT_TYPE_FIELD)
-	e3:SetCode(EFFECT_SYNCHRO_MATERIAL_CUSTOM)
-	e3:SetRange(LOCATION_EXTRA)
-	e3:SetTargetRange(0,LOCATION_MZONE)
-	e3:SetOperation(s.synop)
+	--e3:SetDescription(aux.Stringid(id,1))
+	e3:SetType(EFFECT_TYPE_QUICK_O)
+	e3:SetCode(EVENT_FREE_CHAIN)
+	e3:SetRange(LOCATION_MZONE)
+	e3:SetCondition(function() return Duel.IsMainPhase() end)
+	e3:SetCost(s.cost)
+	e3:SetOperation(s.op3)
 	c:RegisterEffect(e3)
-	--Search or send to the GY 1 Dinosaur from your Deck
-	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))
-	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_TOGRAVE)
-	e1:SetType(EFFECT_TYPE_QUICK_O)
-	e1:SetCode(EVENT_FREE_CHAIN)
-	e1:SetRange(LOCATION_MZONE)
-	e1:SetCountLimit(1,id)
-	e1:SetCondition(function() return Duel.IsMainPhase() end)
-	e1:SetTarget(s.target)
-	e1:SetOperation(s.operation)
-	c:RegisterEffect(e1)
-	--Search or send to the GY 1 Dinosaur from your Deck
-	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,1))
-	e1:SetType(EFFECT_TYPE_QUICK_O)
-	e1:SetCode(EVENT_FREE_CHAIN)
-	e1:SetRange(LOCATION_MZONE)
-	e1:SetCondition(function() return Duel.IsMainPhase() end)
-	e1:SetCost(s.cost)
-	e1:SetOperation(s.op3)
-	c:RegisterEffect(e1)
 	local cicbsm=Card.IsCanBeSynchroMaterial
 	function Card.IsCanBeSynchroMaterial(mc,sc,...)
 		if mc:GetLevel()==0 and sc==c then
@@ -54,17 +53,41 @@ function s.synop(e,tg,ntg,sg,lv,sc,tp)
 	return res,true
 end
 function s.cfilter(c)
-	return c:IsSetCard(0xfa1) and (c:IsAbleToHand() or c:IsAbleToGrave())
+	return c:IsSetCard(0xfa1) and c:IsAbleToGrave()
 end
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_DECK,0,1,nil) end
-	Duel.SetPossibleOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
-	Duel.SetPossibleOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
+	local g1=Duel.GetMatchingGroup(s.cfilter,tp,tp,LOCATION_HAND+LOCATION_ONFIELD,nil)
+	local g2=Duel.GetMatchingGroup(Card.IsAbleToDeck,tp,1-tp,LOCATION_ONFIELD,nil)
+	if chk==0 then return #g1>0 and #g2>0 end
+	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_HAND+LOCATION_ONFIELD)
+	Duel.SetOperationInfo(0,CATEGORY_TODECK,g2,1,0,0)
 end
 function s.operation(e,tp,eg,ep,ev,re,r,rp)
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
-	local tc=Duel.SelectMatchingCard(tp,s.cfilter,tp,LOCATION_DECK,0,1,1,nil):GetFirst()
-	aux.ToHandOrElse(tc,tp)
+	local g1=Duel.GetMatchingGroup(s.cfilter,tp,tp,LOCATION_HAND+LOCATION_ONFIELD,nil)
+	local g2=Duel.GetMatchingGroup(Card.IsAbleToDeck,tp,1-tp,LOCATION_ONFIELD,nil)
+	if #g1<1 then return end
+	local c1=g:Select(tp,1,1)
+	Duel.HintSelection(c1)
+	if Duel.SendtoGrave(c1,REASON_EFFECT)>0 and #g2>0 then
+		local c2=g:Select(tp,1,1)
+		Duel.SendtoDeck(c2,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
+	end
+end
+function s.tdtg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return true end
+	local g=Duel.GetMatchingGroup(Card.IsAbleToDeck,tp,0,LOCATION_ONFIELD,nil)
+	if #g>0 then
+		Duel.SetOperationInfo(0,CATEGORY_TODECK,g,1,0,0)
+		Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,500)
+	end
+	Duel.SetChainLimit(aux.FALSE)
+end
+function s.tdop(e,tp,eg,ep,ev,re,r,rp)
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
+	local g=Duel.SelectMatchingCard(tp,Card.IsAbleToDeck,tp,0,LOCATION_ONFIELD,1,1,nil)
+	if #g>0 and Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)~=0 then
+		Duel.Damage(1-tp,500,REASON_EFFECT)
+	end
 end
 function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
