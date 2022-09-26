@@ -6,8 +6,6 @@ function cm.initial_effect(c)
 	kaos.C1tYPop(c)
 	--to grave
 	kaos.UNEVER(c)
-	--limit
-	kaos.EVERWORLD(c)
 	--summon success
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(m,0))
@@ -30,6 +28,7 @@ function cm.initial_effect(c)
 	e6:SetCode(EVENT_FREE_CHAIN)
 	e6:SetHintTiming(0,TIMINGS_CHECK_MONSTER+TIMING_MAIN_END)
 	e6:SetCountLimit(1)
+	e6:SetCondition(cm.hdcon)
 	e6:SetTarget(cm.sptg)
 	e6:SetOperation(cm.spop)
 	c:RegisterEffect(e6)

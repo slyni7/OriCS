@@ -6,8 +6,6 @@ function cm.initial_effect(c)
 	kaos.C1tYPop(c)
 	--to grave
 	kaos.UNEVER(c)
-	--limit
-	kaos.EVERWORLD(c)
 	--cannot target/indes
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
