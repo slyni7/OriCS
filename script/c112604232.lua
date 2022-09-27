@@ -59,13 +59,20 @@ function cm.op2(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 	c:RegisterEffect(e1)
 	local e2=Effect.CreateEffect(c)
-	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
+	e2:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
+	e2:SetProperty(EFFECT_FLAG_DELAY)
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e2:SetRange(LOCATION_MZONE)
-	e2:SetCategory(CATEGORY_DESTROY)
-	e2:SetReset(RESET_EVENT+RESETS_STANDARD)	
 	e2:SetCondition(cm.ocon22)
-	e2:SetTarget(cm.otar22)
+	e2:SetOperation(cm.oop22)
+	e2:SetReset(RESET_EVENT+RESETS_STANDARD)	
+	c:RegisterEffect(e2)
+	local e2=Effect.CreateEffect(c)
+	e2:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
+	e2:SetRange(LOCATION_MZONE)
+	e2:SetCode(EVENT_SPSUMMON_SUCCESS)
+	e2:SetReset(RESET_EVENT+RESETS_STANDARD)
+	e2:SetCondition(cm.ocon22)
 	e2:SetOperation(cm.oop22)
 	c:RegisterEffect(e2)
 	--damage
@@ -77,17 +84,8 @@ end
 function cm.ocon22(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(cm.onfil22,1,nil,tp)
 end
-function cm.otar22(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then
-		return true
-	end
-	Duel.SetOperationInfo(0,CATEGORY_DESTROY,e:GetHandler(),1,0,0)
-end
 function cm.oop22(e,tp,eg,ep,ev,re,r,rp)
-	local c=e:GetHandler()
-	if c:IsRelateToEffect(e) then
-		Duel.Destroy(c,REASON_EFFECT)
-	end
+	Duel.Destroy(e:GetHandler(),REASON_EFFECT)
 end
 function cm.descon(e,tp,eg,ep,ev,re,r,rp)
 	return Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2
