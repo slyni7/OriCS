@@ -67,10 +67,10 @@ function s.operation(e,tp,eg,ep,ev,re,r,rp)
 	local g1=Duel.GetMatchingGroup(s.cfilter,tp,tp,LOCATION_HAND+LOCATION_ONFIELD,nil)
 	local g2=Duel.GetMatchingGroup(Card.IsAbleToDeck,tp,1-tp,LOCATION_ONFIELD,nil)
 	if #g1<1 then return end
-	local c1=g:Select(tp,1,1)
+	local c1=g1:Select(tp,1,1,nil)
 	Duel.HintSelection(c1)
 	if Duel.SendtoGrave(c1,REASON_EFFECT)>0 and #g2>0 then
-		local c2=g:Select(tp,1,1)
+		local c2=g2:Select(tp,1,1,nil)
 		Duel.SendtoDeck(c2,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 	end
 end
