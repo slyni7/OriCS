@@ -34,14 +34,6 @@ function s.rescon(sg,e,tp,mg)
 		return Duel.IsExistingMatchingCard(Card.IsSynchroSummonable,tp,LOCATION_EXTRA,0,1,nil,nil,sg,2,2)
 	end
 end
-function s.rescon2(sg,e,tp,mg)
-	if #mg==2 then
-		return mg:FilterCount(Card.IsControler,nil,tp)==1
-			and Duel.IsExistingMatchingCard(Card.IsSynchroSummonable,1-tp,LOCATION_EXTRA,0,1,nil,nil,mg,#mg,#mg)
-	else
-		return Duel.IsExistingMatchingCard(Card.IsSynchroSummonable,1-tp,LOCATION_EXTRA,0,1,nil,nil,sg,2,2)
-	end
-end
 function s.oocon21(rc,tp)
 	local cg=(rc:GetColumnGroup()+rc):Filter(Card.IsMonster,nil)
 	local tc=cg:GetFirst()
@@ -72,7 +64,7 @@ function s.ooop21(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 		tc=cg:GetNext()
 	end
-	local sg=aux.SelectUnselectGroup(cg,e,tp,2,2,s.rescon2,1,tp,HINTMSG_FACEUP,s.rescon2,nil,true)
+	local sg=aux.SelectUnselectGroup(cg,e,1-tp,2,2,s.rescon,1,1-tp,HINTMSG_FACEUP,s.rescon,nil,true)
 	if #sg==2 then
 		local syng=Duel.GetMatchingGroup(Card.IsSynchroSummonable,1-tp,LOCATION_EXTRA,0,nil,nil,sg,#sg,#sg)
 		if #syng>0 then
