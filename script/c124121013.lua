@@ -64,8 +64,8 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g2,1,0,0)
 end
 function s.operation(e,tp,eg,ep,ev,re,r,rp)
-	local g1=Duel.GetMatchingGroup(s.cfilter,tp,tp,LOCATION_HAND+LOCATION_ONFIELD,nil)
-	local g2=Duel.GetMatchingGroup(Card.IsAbleToDeck,tp,1-tp,LOCATION_ONFIELD,nil)
+	local g1=Duel.GetMatchingGroup(s.cfilter,tp,LOCATION_HAND+LOCATION_ONFIELD,0,nil)
+	local g2=Duel.GetMatchingGroup(Card.IsAbleToDeck,tp,0,LOCATION_ONFIELD,nil)
 	if #g1<1 then return end
 	local c1=g1:Select(tp,1,1,nil)
 	Duel.HintSelection(c1)
