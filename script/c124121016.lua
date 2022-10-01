@@ -54,6 +54,18 @@ function s.oocon21(rc,tp)
 end
 function s.ooop21(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
+	if c:IsRelateToEffect(e) then
+		local e3=Effect.CreateEffect(c)
+		e3:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
+		e3:SetCode(id)
+		e3:SetOperation(s.oooop213)
+		c:CreateEffectRelation(e3)
+		Duel.RegisterEffect(e3,1-tp)
+		Duel.RaiseEvent(c,id,e,0,1-tp,1-tp,0)
+		e3:Reset()
+	end
+end
+function s.oooop213(e,tp,eg,ep,ev,re,r,rp)
 	local cg=(c:GetColumnGroup()+c):Filter(Card.IsMonster,nil)
 	local tc=cg:GetFirst()
 	local eset={}
@@ -64,13 +76,13 @@ function s.ooop21(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 		tc=cg:GetNext()
 	end
-	local sg=aux.SelectUnselectGroup(cg,e,1-tp,2,2,s.rescon,1,1-tp,HINTMSG_FACEUP,s.rescon,nil,true)
+	local sg=aux.SelectUnselectGroup(cg,e,tp,2,2,s.rescon,1,tp,HINTMSG_FACEUP,s.rescon,nil,true)
 	if #sg==2 then
-		local syng=Duel.GetMatchingGroup(Card.IsSynchroSummonable,1-tp,LOCATION_EXTRA,0,nil,nil,sg,#sg,#sg)
+		local syng=Duel.GetMatchingGroup(Card.IsSynchroSummonable,tp,LOCATION_EXTRA,0,nil,nil,sg,#sg,#sg)
 		if #syng>0 then
 			Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_SPSUMMON)
-			local c=syng:Select(1-tp,1,1,nil):GetFirst()
-			Duel.SynchroSummon(1-tp,c,nil,sg,#sg,#sg)
+			local c=syng:Select(tp,1,1,nil):GetFirst()
+			Duel.SynchroSummon(tp,c,nil,sg,#sg,#sg)
 		end
 	end
 	local e2=Effect.CreateEffect(c)

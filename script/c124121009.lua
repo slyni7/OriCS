@@ -78,7 +78,7 @@ function s.op2(e,tp,eg,ep,ev,re,r,rp)
 		Duel.RegisterEffect(e2,tp)
 	end
 end
-function s.otar21(c)
+function s.otar21(e,c)
 	return c:IsSetCard(0xfa1)
 end
 function s.oop22(e,tp,eg,ep,ev,re,r,rp)
