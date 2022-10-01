@@ -39,7 +39,7 @@ end
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP,tp,0xa) then
-		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP,zone)
+		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP,0xa)
 	end
 end
 function s.op2(e,tp,eg,ep,ev,re,r,rp)
