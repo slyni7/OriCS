@@ -57,40 +57,43 @@ function s.ooop21(e,tp,eg,ep,ev,re,r,rp)
 	if c:IsRelateToEffect(e) then
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
-		e3:SetCode(id)
+		e3:SetCode(EVENT_CHAIN_SOLVED)
 		e3:SetOperation(s.oooop213)
 		c:CreateEffectRelation(e3)
 		Duel.RegisterEffect(e3,1-tp)
-		Duel.RaiseEvent(c,id,e,0,1-tp,1-tp,0)
-		e3:Reset()
+		--Duel.RaiseEvent(c,id,e,0,1-tp,1-tp,0)
 	end
 end
 function s.oooop213(e,tp,eg,ep,ev,re,r,rp)
-	local cg=(c:GetColumnGroup()+c):Filter(Card.IsMonster,nil)
-	local tc=cg:GetFirst()
-	local eset={}
-	while tc do
-		local e1=Effect.CreateEffect(c)
-		e1:SetType(EFFECT_TYPE_SINGLE)
-		e1:SetCode(EFFECT_SYNCHRO_MATERIAL)
-		tc:RegisterEffect(e1)
-		tc=cg:GetNext()
-	end
-	local sg=aux.SelectUnselectGroup(cg,e,tp,2,2,s.rescon,1,tp,HINTMSG_FACEUP,s.rescon,nil,true)
-	if #sg==2 then
-		local syng=Duel.GetMatchingGroup(Card.IsSynchroSummonable,tp,LOCATION_EXTRA,0,nil,nil,sg,#sg,#sg)
-		if #syng>0 then
-			Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_SPSUMMON)
-			local c=syng:Select(tp,1,1,nil):GetFirst()
-			Duel.SynchroSummon(tp,c,nil,sg,#sg,#sg)
+	local c=e:GetHandler()
+	if c:IsRelateToEffect(e) then
+		local cg=(c:GetColumnGroup()+c):Filter(Card.IsMonster,nil)
+		local tc=cg:GetFirst()
+		local eset={}
+		while tc do
+			local e1=Effect.CreateEffect(c)
+			e1:SetType(EFFECT_TYPE_SINGLE)
+			e1:SetCode(EFFECT_SYNCHRO_MATERIAL)
+			tc:RegisterEffect(e1)
+			tc=cg:GetNext()
 		end
+		local sg=aux.SelectUnselectGroup(cg,e,tp,2,2,s.rescon,1,tp,HINTMSG_FACEUP,s.rescon,nil,true)
+		if #sg==2 then
+			local syng=Duel.GetMatchingGroup(Card.IsSynchroSummonable,tp,LOCATION_EXTRA,0,nil,nil,sg,#sg,#sg)
+			if #syng>0 then
+				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+				local c=syng:Select(tp,1,1,nil):GetFirst()
+				Duel.SynchroSummon(tp,c,nil,sg,#sg,#sg)
+			end
+		end
+		local e2=Effect.CreateEffect(c)
+		e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+		e2:SetCode(EVENT_SPSUMMON)
+		e2:SetLabelObject(eset)
+		e2:SetOperation(s.oooop212)
+		Duel.RegisterEffect(e2,tp)
 	end
-	local e2=Effect.CreateEffect(c)
-	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
-	e2:SetCode(EVENT_SPSUMMON)
-	e2:SetLabelObject(eset)
-	e2:SetOperation(s.oooop212)
-	Duel.RegisterEffect(e2,tp)
+	e:Reset()
 end
 function s.oooop212(e,tp,eg,ep,ev,re,r,rp)
 	local eset=e:GetLabelObject()
@@ -107,8 +110,8 @@ function s.op2(e,tp,eg,ep,ev,re,r,rp)
 		and s.oocon21(rc,tp) and Duel.SelectEffectYesNo(tp,c,aux.Stringid(id,0)) then
 		Duel.HintSelection(Group.FromCards(c))
 		local newop=function(te,ttp,teg,tep,tev,tre,tr,trp)
-			s.ooop21(te,ttp,teg,tep,tev,tre,tr,trp)
 			op(te,ttp,teg,tep,tev,tre,tr,trp)
+			s.ooop21(te,ttp,teg,tep,tev,tre,tr,trp)
 		end
 		Duel.ChangeChainOperation(ev,newop)
 	end
