@@ -39,7 +39,11 @@ function s.initial_effect(c)
 		if mc:GetLevel()==0 and sc==c then
 			return true
 		end
-		return cicbsm(mc,sc,...)
+		if sc then
+			return cicbsm(mc,sc,...)
+		else
+			return cicbsm(mc)
+		end
 	end
 end
 function s.synop(e,tg,ntg,sg,lv,sc,tp)
