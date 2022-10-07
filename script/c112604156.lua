@@ -42,7 +42,7 @@ function s.operation(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.filter(c,e,tp)
-	return c:IsSetCard(0xe74) and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and c:IsCode(id)
+	return c:IsSetCard(0xe74) and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and not c:IsCode(id)
 end
 
 function s.tfil2(c)

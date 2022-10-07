@@ -92,7 +92,7 @@ end
 
 --draw
 function cm.spfilter9(c,e,tp)
-	return c:IsType(TYPE_SPIRIT) and c:IsLevelBelow(4) and c:IsCanBeSpecialSummoned(e,0,tp,true,false)
+	return (c:IsType(TYPE_SPIRIT) or c:IsRace(RACE_CYBERSE)) and c:IsCanBeSpecialSummoned(e,0,tp,true,false) 
 end
 function cm.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
