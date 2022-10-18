@@ -6,6 +6,7 @@ function s.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
+	e1:SetValue(s.val1)
 	c:RegisterEffect(e1)
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
@@ -29,6 +30,10 @@ function s.initial_effect(c)
 	table.insert(s.shaft_effect,e2)
 end
 s.listed_series={0x106e}
+function s.val1(e,se,sp,st)
+	local sc=se:GetHandler()
+	return sc:IsSetCard(0x106e)
+end
 function s.con2(e,tp,eg,ep,ev,re,r,rp)
 	local rc=re:GetHandler()
 	return re:IsActiveType(TYPE_SPELL) and re:IsHasType(EFFECT_TYPE_ACTIVATE)
