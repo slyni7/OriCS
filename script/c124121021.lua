@@ -45,7 +45,7 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 			if Duel.SendtoGrave(dc,REASON_EFFECT) and dc:IsLocation(LOCATION_GRAVE)
 				and Duel.GetLocationCountFromEx(tp)>0 then
 				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-				local sc=sg:Select(tp,1,1,nil)
+				local sc=sg:Select(tp,1,1,nil):GetFirst()
 				Duel.SpecialSummon(sc,0,tp,tp,true,false,POS_FACEUP)
 				sc:CompleteProcedure()
 			end
