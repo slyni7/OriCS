@@ -45,7 +45,7 @@ function s.tar1(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		return Duel.IsPlayerCanDraw(tp,2)
 	end
-	Duel.SetOperationInfo(0,CATEGORY_TODRAW,nil,0,tp,2)
+	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
 	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,2)
 end
 function s.op1(e,tp,eg,ep,ev,re,r,rp)

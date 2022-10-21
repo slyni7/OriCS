@@ -85,7 +85,7 @@ function s.op3(e,tp,eg,ep,ev,re,r,rp)
 	if rp~=tp and Duel.IsChainNegatable(ev) and c:IsReleasable() and Duel.SelectEffectYesNo(tp,c,aux.Stringid(id,0)) then
 		Duel.Release(c,REASON_EFFECT)
 		if Duel.NegateActivation(ev) then
-			Duel.Remove(eg,REASON_EFFECT)
+			Duel.Remove(eg,POS_FACEUP,REASON_EFFECT)
 		end
 	end
 end
