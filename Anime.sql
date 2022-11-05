@@ -1,1 +1,0 @@
-UPDATE datas SET ot = 32;

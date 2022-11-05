@@ -1,6 +1,0 @@
-sqlite3 OriCS-7urikamom3.cdb ".read Anime.sql"
-sqlite3 OriCS-461.cdb ".read Anime.sql"
-sqlite3 OriCS-Craw.cdb ".read Anime.sql"
-sqlite3 OriCS-CT_Tsukasa.cdb ".read Anime.sql"
-sqlite3 OriCS-MoKa.cdb ".read Anime.sql"
-sqlite3 OriCS-YuL.cdb ".read Anime.sql"
