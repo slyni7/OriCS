@@ -26,6 +26,7 @@ function s.distg(e,c)
 	return not c:IsSetCard(0x903) and c:IsHasLevel()
 end
 function s.synop(e,tg,ntg,sg,lv,sc,tp)
-	local res=e:GetHandler()==sc and sg:GetClassCount(Card.GetLevel)==1 and #sg==2
+	local res=(sc:IsCode(id) and sg:GetClassCount(Card.GetLevel)==1 and #sg==2)
+		or (not sc:IsCode(id) and sg:CheckWithSumEqual(Card.GetSynchroLevel,lv,#sg,#sg,sc))
 	return res,true
 end
