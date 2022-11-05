@@ -33,19 +33,6 @@ function Link.GetLinkCount(c)
 	else return 1 end
 end
 function Link.CheckRecursive(c,tp,sg,mg,lc,minc,maxc,f,specialchk,og,emt,filt)
-	local g2=mg:Filter(Card.IsHasEffect,nil,73941492+TYPE_LINK)
-	if #g2>0 then
-		local tc=g2:GetFirst()
-		while tc do
-			local eff={tc:GetCardEffect(73941492+TYPE_LINK)}
-			for i,f in ipairs(eff) do
-				if Auxiliary.HarmonizingMagFilter(c,f,f:GetValue()) then
-					return false
-				end
-			end
-			tc=g2:GetNext()
-		end 
-	end
 	if #sg>maxc then return false end
 	filt=filt or {}
 	sg:AddCard(c)
