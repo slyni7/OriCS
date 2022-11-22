@@ -2346,7 +2346,7 @@ function Duel.XyzSummon(...)
 	end
 	local id=ce:GetHandler():GetOriginalCode()
 	if EDOCard[id] then
-		return cixs(...)
+		return dxs(...)
 	else
 		local t={...}
 		local p=t[1]
@@ -2362,6 +2362,8 @@ function Duel.XyzSummon(...)
 		end
 	end
 end
+
+pcall(dofile,"expansions/script/proc_braveex.lua")
 
 --dofile("expansions/script/proto.lua")
 
