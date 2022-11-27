@@ -1,7 +1,5 @@
 --ドラコニアの海竜騎兵
 function c95480802.initial_effect(c)
-	--pendulum summon
-	aux.EnablePendulumAttribute(c)
 	--spsummon
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
