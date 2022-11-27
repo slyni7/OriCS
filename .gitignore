@@ -1,2 +1,3 @@
-pics/photothumb.db
+photothumb.db
+sqlite*.exe
 *.db3
