@@ -2364,9 +2364,6 @@ function Duel.XyzSummon(...)
 end
 
 pcall(dofile,"expansions/script/proc_braveex.lua")
-
 --dofile("expansions/script/proto.lua")
-
 --dofile("expansions/script/RDD.lua")
-
 --dofile("expansions/script/fairduel.lua")

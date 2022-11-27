@@ -37,7 +37,7 @@ else
 	EFFECT_COUNT_CODE_DUEL   = 0x20000000
 	EFFECT_COUNT_CODE_SINGLE = 0x40000000
 	SUMMON_TYPE_ADVANCE=SUMMON_TYPE_TRIBUTE
-	dofile("expansions/script/init.lua")
+	dofile("expansions/script/OriCS_init.lua")
 end
 
 local ct=Duel.GetFieldGroupCount(1,LOCATION_DECK,0)
