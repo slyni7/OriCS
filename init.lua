@@ -1,19 +1,24 @@
-dofile("expansions/convert-from-core.lua")
-if IREDO_COMES_TRUE then
-	function Auxiliary.Stringid(code,id)
-		return code*16+id
-	end
-	Duel.IsDuelType=aux.FALSE
-	function Card.CanAttack(c)
-		return c:IsAttackable()
-	end
-	function Card.IsSummonCode(c,sc,sumtype,sp,code)
-		if sumtype&SUMMON_TYPE_FUSION==SUMMON_TYPE_FUSION then
-			return c:IsFusionCode(code)
+--[[
+KoishiPro :
+dofile("expansions/init.lua") >> dofile("expansions/script/OriCS_init.lua")
+
+EDOPro :
+Duel.LoadScript("OriCS_init.lua") >> pcall(dofile,"expansions/init.lua")
+--]]
+
+function initScript(s)
+	local orics = string.gsub(s, "expansions/", "repositories/OriCS/")
+	local corona = string.gsub(s, "expansions/", "repositories/CP19/")
+	if not pcall(dofile(orics)) then
+		if not pcall(dofile(corona)) then
+			pcall(dofile(s))
 		end
-		return c:IsCode(code)
 	end
-	Card.IsGeminiState=Card.IsDualState
+end
+
+initScript("expansions/convert-from-core.lua")
+
+if IREDO_COMES_TRUE then
 	EFFECT_ADD_FUSION_CODE=340
 	EFFECT_QP_ACT_IN_SET_TURN=359
 	EFFECT_COUNT_CODE_OATH   = 0x10000000
@@ -32,16 +37,33 @@ if IREDO_COMES_TRUE then
 	OPCODE_ISTYPE			=0x40000102
 	OPCODE_ISRACE			=0x40000103
 	OPCODE_ISATTRIBUTE		=0x40000104
+	Auxiliary.Stringid=function(code,id)
+		return code*16+id
+	end
+	Card.CanAttack=function(c)
+		return c:IsAttackable()
+	end
+	Card.IsSummonCode=function(c,sc,sumtype,sp,code)
+		if sumtype&SUMMON_TYPE_FUSION==SUMMON_TYPE_FUSION then
+			return c:IsFusionCode(code)
+		end
+		return c:IsCode(code)
+	end
+	Card.IsGeminiState=Card.IsDualState
+	Duel.IsDuelType=aux.FALSE
+	OriCS_init=true
 else
 	EFFECT_COUNT_CODE_OATH   = 0x10000000
 	EFFECT_COUNT_CODE_DUEL   = 0x20000000
 	EFFECT_COUNT_CODE_SINGLE = 0x40000000
 	SUMMON_TYPE_ADVANCE=SUMMON_TYPE_TRIBUTE
-	dofile("expansions/script/OriCS_init.lua")
+	if not OriCS_init then
+		OriCS_init=true
+		if not pcall(dofile,"repositories/OriCS/script/OriCS_init.lua") then pcall(dofile,"expansions/script/OriCS_init.lua") end
+	end
 end
 
-local ct=Duel.GetFieldGroupCount(1,LOCATION_DECK,0)
-if ct==0 and Duel.IsDuelType(DUEL_ATTACK_FIRST_TURN) then
+if Duel.GetFieldGroupCount(1,LOCATION_DECK,0)==0 and Duel.IsDuelType(DUEL_ATTACK_FIRST_TURN) then
 	local f=io.open("deck/handtest.ydk","r")
 	if f==nil then
 		return

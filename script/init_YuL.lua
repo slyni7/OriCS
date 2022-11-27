@@ -2,8 +2,6 @@
 
 YuL={}
 
-pcall(dofile,"expansions/script/proc_module.lua")
-
 --SEARCHING CARD CATEGORY
 CATEGORY_SEARCH_CARD=CATEGORY_SEARCH+CATEGORY_TOHAND
 
@@ -933,50 +931,52 @@ function YuL.thelibraryofbabelop(e,tp,eg,ep,ev,re,r,rp)
 end
 
 --가챠는 나쁜 문명!
-local cregeff=Card.RegisterEffect
-function Card.RegisterEffect(c,e,forced,...)
-	if not YuL.RandomSeed then
-		YuL.SetRandomSeed()
+if Duel.GetRandomNumber then
+	YuL.Random = Duel.GetRandomNumber
+else
+	local cregeff=Card.RegisterEffect
+	function Card.RegisterEffect(c,e,forced,...)
+		if not YuL.RandomSeed then
+			YuL.SetRandomSeed()
+		end
+		cregeff(c,e,forced)
 	end
-	cregeff(c,e,forced)
-end
-function YuL.SetRandomSeed()
-	YuL.RandomSeed=0
-	local e1=Effect.GlobalEffect()
-	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
-	e1:SetCode(EVENT_ADJUST)
-	e1:SetProperty(EFFECT_FLAG_NO_TURN_RESET)
-	e1:SetCountLimit(1)
-	e1:SetOperation(YuL.SetRandomSeedOperation)
-	Duel.RegisterEffect(e1,0)
-end
-function YuL.SetRandomSeedOperation(e,tp,eg,ep,ev,re,r,rp)
-	local g=Duel.GetFieldGroup(0,0xff,0xff)
-	local tc=g:GetFirst()
-	local fc=nil
-	local i=0
-	while tc do
-		fc=tc
-		tc=g:GetNext()
-		if not tc then
-			break
-		end
-		if fc:GetCode()>tc:GetCode() then
-			YuL.RandomSeed=YuL.RandomSeed+2^i
-		end
-		i=i+1
-		if i>31 then
-			break
+	function YuL.SetRandomSeed()
+		YuL.RandomSeed=0
+		local e1=Effect.GlobalEffect()
+		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+		e1:SetCode(EVENT_ADJUST)
+		e1:SetProperty(EFFECT_FLAG_NO_TURN_RESET)
+		e1:SetCountLimit(1)
+		e1:SetOperation(YuL.SetRandomSeedOperation)
+		Duel.RegisterEffect(e1,0)
+	end
+	function YuL.SetRandomSeedOperation(e,tp,eg,ep,ev,re,r,rp)
+		local g=Duel.GetFieldGroup(0,0xff,0xff)
+		local tc=g:GetFirst()
+		local fc=nil
+		local i=0
+		while tc do
+			fc=tc
+			tc=g:GetNext()
+			if not tc then
+				break
+			end
+			if fc:GetCode()>tc:GetCode() then
+				YuL.RandomSeed=YuL.RandomSeed+2^i
+			end
+			i=i+1
+			if i>31 then
+				break
+			end
 		end
 	end
-end
-function YuL.Random(mi,ma)
-	local seed=YuL.RandomSeed
-	local next=seed*1103515245+12345
-	local rand=next&0xffffffff
-	YuL.RandomSeed=rand
-	return rand%(ma-mi)+mi
-end
-function YuL.random(mi,ma)
-	return YuL.Random(mi,ma)
+	function YuL.Random(min,max)
+		local seed=YuL.RandomSeed
+		local next=seed*1103515245+12345
+		local rand=next&0xffffffff
+		YuL.RandomSeed=rand
+		return rand%(max-min)+min
+	end
+	YuL.random=YuL.Random
 end

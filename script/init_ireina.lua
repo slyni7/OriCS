@@ -1,3 +1,4 @@
+--Arcana Force Utilities
 function Auxiliary.IsArcanaListed(c)
 	return c:IsCode(36690018,73206827,82710015,82710016,82710017,82710018,82710019,82710020,82710021,99189322)
 end
@@ -30,6 +31,7 @@ function Duel.TossCoin(p,ev)
 	return c1,c2,c3,c4,c5
 end
 
+--Angel Notes Utilities
 local dgcc=Duel.GetCurrentChain
 Auxiliary.CheckDisSumAble=false
 function Duel.GetCurrentChain()
@@ -74,6 +76,8 @@ function Auxiliary.AngelNotesCantabileOperation(e,tp,eg,ep,ev,re,r,rp)
 	end
 	return false
 end
+
+--Find Function
 function Auxiliary.FindFunction(x)
 	local f=_G
 	for v in x:gmatch("[^%.]+") do
@@ -81,6 +85,8 @@ function Auxiliary.FindFunction(x)
 	end
 	return f
 end
+
+--Card.CopyEffect
 local ccopyeff=Card.CopyEffect
 function Card.CopyEffect(c,code,...)
 	Auxiliary.CopyingCode=code
@@ -88,6 +94,8 @@ function Card.CopyEffect(c,code,...)
 	Auxiliary.CopyingCode=nil
 	return res
 end
+
+--aux.WriteIreinaEffect & aux.MakeIreinaEffect
 Auxiliary.IreinaCurrentXyzHandler=nil
 function Auxiliary.WriteIreinaEffect(e,i,s)
 	local c=e:GetOwner()
@@ -764,9 +772,12 @@ function Duel.SMRemoveCard(sp,f,p,s,o,mi,ma,ex,...)
 	return Duel.SelectMatchingCard(sp,filter(exc),p,sloc,oloc,mi,ma,exg,...)
 end
 
+--???
 function Card.AddMonsterAttributeComplete(c)
+
 end
 
+--Melancholic Utilities
 EFFECT_GREED_YOUNGER=18453229
 
 local dsth=Duel.SendtoHand
@@ -855,6 +866,7 @@ function Auxiliary.IsMaterialListSetCard(c,setcode)
 	return false
 end
 
+--Alchemist Utilities
 RACE_ALCHEMIST=0x10000000
 
 GlobalAttributeEvent=false
@@ -942,6 +954,7 @@ function Duel.ChangePosition(...)
 	return dcp(table.unpack(t))
 end
 
+--Silent Majority Utilities
 GlobalSilentMajority=nil
 function Auxiliary.RegisterSilentMajority()
 	if GlobalSilentMajority then
@@ -1060,6 +1073,7 @@ if IREDO_COMES_TRUE or (YGOPRO_VERSION~="Core") then
 	Auxiliary.RegisterSilentMajority()
 end
 
+--Old God Utilities
 local cregeff=Card.RegisterEffect
 EVENT_OLDGOD_FORCED=18453128
 FLAG_EFFECT_OLDGOD=18453128
@@ -1180,6 +1194,7 @@ end
 
 Auxiliary.oldgod_codes={5257687,70307656,78636495,39180960,75285069,4035199,31242786,2792265,7914843,44913552,18453130}
 
+--Gemini Star Utilities
 FLAG_EFFECT_GEMINI=18453156
 EFFECT_GEMINI_STAR=18453157
 
@@ -1265,6 +1280,7 @@ function Card.RegisterEffect(c,e,forced,...)
 	end
 end
 
+--Charlotte Utilities
 EFFECT_EXTRA_RITUAL_MATERIAL_CHARLOTTE=18453188
 local dgritmat=Duel.GetRitualMaterial
 function Duel.GetRitualMaterial(p)
@@ -1289,6 +1305,7 @@ function Card.GetRitualLevel(c,rc)
 	return 0
 end
 
+--Aroma Utilities
 GlobalAromaRecover={}
 GlobalAromaRecover[0]=false
 GlobalAromaRecover[1]=false
@@ -1358,6 +1375,7 @@ if not Duel.HintActivation then
 	end
 end
 
+--Eine Kleine Utilities
 CARD_EINE_KLEINE=18452775
 EFFECT_EINE_KLEINE=18452775
 
@@ -1804,8 +1822,7 @@ function Card.RegisterEffect(c,e,forced,...)
 	end
 end
 
---dofile("expansions/script/proc_delay.lua")
-
+--Alice Scarlet Utilities
 EFFECT_ALICE_SCARLET=18453385
 local cregeff=Card.RegisterEffect
 function Card.RegisterEffect(c,e,forced,...)
@@ -2363,7 +2380,7 @@ function Duel.XyzSummon(...)
 	end
 end
 
-pcall(dofile,"expansions/script/proc_braveex.lua")
+--pcall(dofile,"expansions/script/proc_braveex.lua")
 --dofile("expansions/script/proto.lua")
 --dofile("expansions/script/RDD.lua")
 --dofile("expansions/script/fairduel.lua")

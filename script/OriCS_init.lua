@@ -1,5 +1,24 @@
-dofile("expansions/script/proc_version_check.lua")
+--[[
+KoishiPro :
+dofile("expansions/init.lua") >> dofile("expansions/script/OriCS_init.lua")
 
+EDOPro :
+Duel.LoadScript("OriCS_init.lua") >> pcall(dofile,"expansions/init.lua")
+--]]
+
+if not OriCS_init then
+	OriCS_init=true
+	if not pcall(dofile,"repositories/OriCS/init.lua") then pcall(dofile,"expansions/init.lua") end
+end
+
+--version check
+if not YGOPRO_VERSION then
+	if EFFECT_FUSION_MAT_RESTRICTION then YGOPRO_VERSION="Percy/EDO"
+	elseif EFFECT_CHANGE_LINK_MARKER_KOISHI then YGOPRO_VERSION="Koishi"
+	else YGOPRO_VERSION="Core" end
+end
+
+--dependencies
 if YGOPRO_VERSION~="Percy/EDO" then
 	Auxiliary.FilterFaceupFunction=function(f,...)
 		local params={...}
@@ -7,7 +26,18 @@ if YGOPRO_VERSION~="Percy/EDO" then
 					return target:IsFaceup() and f(target,table.unpack(params))
 				end
 	end
-else
+else --Koishi/Core
+	Duel.LoadScript = function(s,forced)
+		local orics = "repositories/OriCS/script/" .. s
+		local corona = "repositories/CP19/script/" .. s
+		local exp = "expansions/script/" .. s
+		--★차후 forced에 관한 수정 바람
+		if not pcall(dofile(orics)) then
+			if not pcall(dofile(corona)) then
+				pcall(dofile(exp))
+			end
+		end
+	end
 	GetID=function()
 		return self_table,self_code
 	end
@@ -16,19 +46,11 @@ else
 					return f(target,value,scard,sumtype,tp)
 				end
 	end
-	
 	Auxiliary.FilterBoolFunctionEx2=function(f,...)
 		local params={...}
 		return	function(target,scard,sumtype,tp)
 					return f(target,scard,sumtype,tp,table.unpack(params))
 				end
-	end
-	
-	Auxiliary.FilterBoolFunctionEx=function(f,...)
-		local params={...}
-		return function(target)
-				return f(target,table.unpack(params))
-			end
 	end
 	Auxiliary.AddEquipProcedure=function(c,p,f,eqlimit,cost,tg,op,con)
 		local e1=Effect.CreateEffect(c)
@@ -119,7 +141,8 @@ else
 	end
 end
 
-local setcl=Effect.SetCountLimit
+--Effect.SetCountLimit
+local setCntLmt=Effect.SetCountLimit
 global_eff_count_limit_max={}
 global_eff_count_limit_code={}
 global_eff_count_limit_flag={}
@@ -150,40 +173,11 @@ Effect.SetCountLimit=function(e,max,code,flag,...)
 	global_eff_count_limit_max[e]=max
 	global_eff_count_limit_code[e]=code
 	global_eff_count_limit_flag[e]=flag
-	setcl(e,max,code,flag,...)
+	setCntLmt(e,max,code,flag,...)
 end
 
-dofile("expansions/script/AuxCard_CustomType.lua")
-if YGOPRO_VERSION~="Percy/EDO" then
-	pcall(dofile,"expansions/script/proc_fusion_koishi.lua")
-	pcall(dofile,"expansions/script/proc_synchro_koishi.lua")
-	pcall(dofile,"expansions/script/proc_xyz_koishi.lua")
-end
-pcall(dofile,"expansions/script/proc_equation.lua")
-pcall(dofile,"expansions/script/proc_order.lua")
-pcall(dofile,"expansions/script/proc_diffusion.lua")
---pcall(dofile,"expansions/script/proc_access.lua")
-dofile("expansions/script/proc_beyond.lua")
-dofile("expansions/script/proc_square.lua")
-dofile("expansions/script/proc_delight.lua")
-dofile("expansions/script/proc_scripted.lua")
-dofile("expansions/script/init_ireina.lua")
-pcall(dofile,"expansions/script/init_Spinel.lua")
-pcall(dofile,"expansions/script/init_YuL.lua")
-pcall(dofile,"expansions/script/init_kaos.lua")
-pcall(dofile,"expansions/script/additional_setcards.lua")
---pcall(dofile,"expansions/script/inf.lua")
---pcall(dofile,"expansions/script/BELCH.lua")
---pcall(dofile,"expansions/script/mirror.lua")
---pcall(dofile,"expansions/script/cyan.lua")
---pcall(dofile,"expansions/script/Rune.lua")
---pcall(dofile,"expansions/script/hebi.lua")
---pcall(dofile,"expansions/script/cirukiru9.lua")
---pcall(dofile,"expansions/script/remove_xyz_which_have_rank.lua")
---dofile("expansions/script/SSSS.lua")
---dofile("expansions/script/RDD.lua")
-
-local cregeff=Card.RegisterEffect
+--Card.RegisterEffect
+local cRegEff=Card.RegisterEffect
 Auxiliary.MetatableEffectCount=true
 function Card.RegisterEffect(c,e,forced,...)
 	local code=c:GetOriginalCode()
@@ -207,6 +201,28 @@ function Card.RegisterEffect(c,e,forced,...)
 			ct=ct+1
 		end
 	end
-	cregeff(c,e,forced,...)
+	cRegEff(c,e,forced,...)
 end
+
+--OriCS utilities
+Duel.LoadScript("AuxCard_CustomType.lua")
+if YGOPRO_VERSION~="Percy/EDO" then
+	Duel.LoadScript("koishi_proc_fusion.lua")
+	Duel.LoadScript("koishi_proc_synchro.lua")
+	Duel.LoadScript("koishi_proc_xyz.lua")
+end
+Duel.LoadScript("proc_equation.lua")
+Duel.LoadScript("proc_order.lua")
+Duel.LoadScript("proc_diffusion.lua")
+Duel.LoadScript("proc_beyond.lua")
+Duel.LoadScript("proc_square.lua")
+Duel.LoadScript("proc_delight.lua")
+Duel.LoadScript("proc_scripted.lua")
+Duel.LoadScript("proc_module.lua")
+Duel.LoadScript("init_ireina.lua")
+Duel.LoadScript("init_Spinel.lua")
+Duel.LoadScript("init_YuL.lua")
+Duel.LoadScript("init_kaos.lua")
+Duel.LoadScript("additional_setcards.lua")
+Duel.LoadScript("additional_setcards_expand.lua")
 
