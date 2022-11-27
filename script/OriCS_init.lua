@@ -177,6 +177,7 @@ Effect.SetCountLimit=function(e,max,code,flag,...)
 end
 
 --Card.RegisterEffect
+--[[
 local cRegEff=Card.RegisterEffect
 Auxiliary.MetatableEffectCount=true
 function Card.RegisterEffect(c,e,forced,...)
@@ -203,8 +204,10 @@ function Card.RegisterEffect(c,e,forced,...)
 	end
 	cRegEff(c,e,forced,...)
 end
+--]]
 
 --OriCS utilities
+Duel.LoadScript("_register_effect.lua");
 Duel.LoadScript("AuxCard_CustomType.lua")
 if YGOPRO_VERSION~="Percy/EDO" then
 	Duel.LoadScript("koishi_proc_fusion.lua")

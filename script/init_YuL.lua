@@ -2,32 +2,87 @@
 
 YuL={}
 
---SEARCHING CARD CATEGORY
+--constants
 CATEGORY_SEARCH_CARD=CATEGORY_SEARCH+CATEGORY_TOHAND
 
---TYPE_SPELL+TYPE_TRAP
-YuL.ST=0x6
+CARD_LAVA_GOLEM		=102380
+CARD_RAINBOW_FISH	=23771716
+CARD_FISH_N_KICKS	=32703716
+CARD_FISH_N_BACKS	=21507589
 
-function Card.IsMonster(c)
-	return c:IsType(TYPE_MONSTER)
-end
-function Card.IsSpell(c)
-	return c:IsType(TYPE_SPELL)
-end
-function Card.IsTrap(c)
-	return c:IsType(TYPE_TRAP)
-end
-function Card.IsM(c)
-	return c:IsMonster(c)
-end
-function Card.IsST(c)
-	return c:IsType(YuL.ST)
-end
+EFFECT_CHANGE_SUMMON_TYPE	=99970548
+EFFECT_ADD_SUMMON_TYPE		=99970549
+EFFECT_REMOVE_SUMMON_TYPE	=99970550
+
+
+--마함
+YuL.ST=0x6	--TYPE_SPELL+TYPE_TRAP
+--익스플로전!
+YuL.d500sp=46130346 --파이어볼
+YuL.d600sp=73134081 --화형
+YuL.d800sp=19523799 --대화재
+YuL.d1000sp1=46918794 --화염 지옥
+YuL.d1000sp2=33767325 --데스 메테오
+--턴제 속성
+YuL.dif=100000000
+YuL.O=EFFECT_COUNT_CODE_OATH
+YuL.D=EFFECT_COUNT_CODE_DUEL
+YuL.S=EFFECT_COUNT_CODE_SINGLE
+--속성
+ATT_X=0x0
+ATT_E=0x1
+ATT_W=0x2
+ATT_F=0x4
+ATT_N=0x8
+ATT_L=0x10
+ATT_D=0x20
+ATT_G=0x40
+--소환타입
+SUMT_NOR=SUMMON_TYPE_NORMAL
+SUMT_ADV=SUMMON_TYPE_ADVANCE
+SUMT_DU=SUMMON_TYPE_DUAL
+SUMT_FL=SUMMON_TYPE_FLIP
+SUMT_SP=SUMMON_TYPE_SPECIAL
+SUMT_F=SUMMON_TYPE_FUSION
+SUMT_R=SUMMON_TYPE_RITUAL
+SUMT_S=SUMMON_TYPE_SYNCHRO
+SUMT_X=SUMMON_TYPE_XYZ
+SUMT_P=SUMMON_TYPE_PENDULUM
+SUMT_L=SUMMON_TYPE_LINK
+SUMT_E=SUMMON_TYPE_EQUATION
+SUMT_O=SUMMON_TYPE_ORDER
+SUMT_M=SUMMON_TYPE_MODULE
+SUMT_Q=SUMMON_TYPE_SQUARE
+SUMT_B=SUMMON_TYPE_BEYOND
+SUMT_D=SUMMON_TYPE_DELIGHT
+
 
 --메세지
 function YuL.Hint(code,n)
 	Duel.Hint(HINT_MESSAGE,0,aux.Stringid(code,n))
 	Duel.Hint(HINT_MESSAGE,1,aux.Stringid(code,n))
+end
+
+--Card.Is몬마함
+if Card.IsMonster then
+	Card.IsM=Card.IsMonster
+	Card.IsST=Card.IsSpellTrap
+else
+	function Card.IsMonster(c)
+		return c:IsType(TYPE_MONSTER)
+	end
+	function Card.IsSpell(c)
+		return c:IsType(TYPE_SPELL)
+	end
+	function Card.IsTrap(c)
+		return c:IsType(TYPE_TRAP)
+	end
+	function Card.IsM(c)
+		return c:IsMonster(c)
+	end
+	function Card.IsST(c)
+		return c:IsType(YuL.ST)
+	end
 end
 
 --Aranea Attack/Defense Effect
@@ -71,9 +126,7 @@ function YuL.AraneaMainEffectOperation(e,tp,eg,ep,ev,re,r,rp)
     end
 end
 
-
 --라바 골렘
-CARD_LAVA_GOLEM=102380
 function Card.IsLavaGolem(c)
 	return c:IsCode(CARD_LAVA_GOLEM)
 end
@@ -136,57 +189,12 @@ function YuL.LavaGolemCondition(condition,p)
 end
 
 --레인보우 휘시
-CARD_RAINBOW_FISH=23771716
-CARD_FISH_N_KICKS=32703716
-CARD_FISH_N_BACKS=21507589
 function Card.IsRainbowFish(c)
 	return c:IsCode(CARD_RAINBOW_FISH)
 end
 function Card.IsRainbowFishCard(c)
 	return c:IsCode(CARD_RAINBOW_FISH) or c:IsSetCard(0xe18)
 end
-
---익스플로전!
-YuL.d500sp=46130346 --파이어볼
-YuL.d600sp=73134081 --화형
-YuL.d800sp=19523799 --대화재
-YuL.d1000sp1=46918794 --화염 지옥
-YuL.d1000sp2=33767325 --데스 메테오
-
---턴제 속성
-YuL.dif=100000000
-YuL.O=EFFECT_COUNT_CODE_OATH
-YuL.D=EFFECT_COUNT_CODE_DUEL
-YuL.S=EFFECT_COUNT_CODE_SINGLE
-
---속성
-ATT_X=0x0
-ATT_E=0x1
-ATT_W=0x2
-ATT_F=0x4
-ATT_N=0x8
-ATT_L=0x10
-ATT_D=0x20
-ATT_G=0x40
-
---소환타입
-SUMT_NOR=SUMMON_TYPE_NORMAL
-SUMT_ADV=SUMMON_TYPE_ADVANCE
-SUMT_DU=SUMMON_TYPE_DUAL
-SUMT_FL=SUMMON_TYPE_FLIP
-SUMT_SP=SUMMON_TYPE_SPECIAL
-SUMT_F=SUMMON_TYPE_FUSION
-SUMT_R=SUMMON_TYPE_RITUAL
-SUMT_S=SUMMON_TYPE_SYNCHRO
-SUMT_X=SUMMON_TYPE_XYZ
-SUMT_P=SUMMON_TYPE_PENDULUM
-SUMT_L=SUMMON_TYPE_LINK
-SUMT_E=SUMMON_TYPE_EQUATION
-SUMT_O=SUMMON_TYPE_ORDER
-SUMT_M=SUMMON_TYPE_MODULE
-SUMT_Q=SUMMON_TYPE_SQUARE
-SUMT_B=SUMMON_TYPE_BEYOND
-SUMT_D=SUMMON_TYPE_DELIGHT
 
 --데미지 계산 중 이외
 function Auxiliary.not_damcal()
@@ -269,9 +277,6 @@ function Card.GetAdjacentGroup(c)
 end
 
 --소환 취급
-EFFECT_CHANGE_SUMMON_TYPE=99970548
-EFFECT_ADD_SUMMON_TYPE=99970549
-EFFECT_REMOVE_SUMMON_TYPE=99970550
 local cgsumt=Card.GetSummonType
 function Card.GetSummonType(c)
 	local t = cgsumt(c)
