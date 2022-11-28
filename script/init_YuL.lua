@@ -2,28 +2,134 @@
 
 YuL={}
 
-pcall(dofile,"expansions/script/proc_module.lua")
-
---SEARCHING CARD CATEGORY
+--constants
 CATEGORY_SEARCH_CARD=CATEGORY_SEARCH+CATEGORY_TOHAND
 
---TYPE_SPELL+TYPE_TRAP
-YuL.ST=0x6
+CARD_LAVA_GOLEM		=102380
+CARD_RAINBOW_FISH	=23771716
+CARD_FISH_N_KICKS	=32703716
+CARD_FISH_N_BACKS	=21507589
 
-function Card.IsMonster(c)
-	return c:IsType(TYPE_MONSTER)
+EFFECT_CHANGE_SUMMON_TYPE	=99970548
+EFFECT_ADD_SUMMON_TYPE		=99970549
+EFFECT_REMOVE_SUMMON_TYPE	=99970550
+
+--마함
+YuL.ST=0x6	--TYPE_SPELL+TYPE_TRAP
+--익스플로전!
+YuL.d500sp=46130346 --파이어볼
+YuL.d600sp=73134081 --화형
+YuL.d800sp=19523799 --대화재
+YuL.d1000sp1=46918794 --화염 지옥
+YuL.d1000sp2=33767325 --데스 메테오
+--턴제 속성
+YuL.dif=100000000
+YuL.O=EFFECT_COUNT_CODE_OATH
+YuL.D=EFFECT_COUNT_CODE_DUEL
+YuL.S=EFFECT_COUNT_CODE_SINGLE
+--속성
+ATT_X=0x0
+ATT_E=0x1
+ATT_W=0x2
+ATT_F=0x4
+ATT_N=0x8
+ATT_L=0x10
+ATT_D=0x20
+ATT_G=0x40
+--소환타입
+SUMT_NOR=SUMMON_TYPE_NORMAL
+SUMT_ADV=SUMMON_TYPE_ADVANCE
+SUMT_DU	=SUMMON_TYPE_DUAL
+SUMT_FL	=SUMMON_TYPE_FLIP
+SUMT_SP	=SUMMON_TYPE_SPECIAL
+SUMT_F	=SUMMON_TYPE_FUSION
+SUMT_R	=SUMMON_TYPE_RITUAL
+SUMT_S	=SUMMON_TYPE_SYNCHRO
+SUMT_X	=SUMMON_TYPE_XYZ
+SUMT_P	=SUMMON_TYPE_PENDULUM
+SUMT_L	=SUMMON_TYPE_LINK
+SUMT_E	=SUMMON_TYPE_EQUATION
+SUMT_O	=SUMMON_TYPE_ORDER
+SUMT_M	=SUMMON_TYPE_MODULE
+SUMT_Q	=SUMMON_TYPE_SQUARE
+SUMT_B	=SUMMON_TYPE_BEYOND
+SUMT_D	=SUMMON_TYPE_DELIGHT
+
+--cregeff
+ACTIVATED_THIS_TURN	=99979999
+EQUIPED_THIS_TURN	=99970000
+
+YuL.GlobalSet=false
+function YuL.Set()
+	YuL.GlobalSet=true
+	YuL.SetActivateTurn()
+	YuL.SetEquipTurn()
 end
-function Card.IsSpell(c)
-	return c:IsType(TYPE_SPELL)
+RegEff.sgref(function(e,c) if not YuL.GlobalSet then YuL.Set() end end)
+
+--엑시즈 베일
+RegEff.scref(96457619,1,function(e,c)
+	e:SetTarget(function(e,c)
+		return c:IsType(TYPE_XYZ) and c:GetOverlayCount()~=0
+	end)
+)
+
+--이 턴에 발동된
+function YuL.SetActivateTurn()
+	--YuL.EnableActivateTurn=1
+	local e1=Effect.GlobalEffect()
+	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+	e1:SetCode(EVENT_CHAIN_SOLVED)
+	e1:SetOperation(YuL.SetActivateTurnOperation)
+	Duel.RegisterEffect(e1,0)
 end
-function Card.IsTrap(c)
-	return c:IsType(TYPE_TRAP)
+function YuL.SetActivateTurnOperation(e,tp,eg,ep,ev,re,r,rp)
+	re:GetHandler():RegisterFlagEffect(ACTIVATED_THIS_TURN,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
 end
-function Card.IsM(c)
-	return c:IsMonster(c)
+function Card.IsActivateTurn(c)
+	return c:GetFlagEffect(ACTIVATED_THIS_TURN)>0
 end
-function Card.IsST(c)
-	return c:IsType(YuL.ST)
+
+--이 턴에 장착된
+function YuL.SetEquipTurn()
+	--YuL.EnableEquipTurn=1
+	local e1=Effect.GlobalEffect()
+	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+	e1:SetCode(EVENT_EQUIP)
+	e1:SetOperation(YuL.SetEquipTurnOperation)
+	Duel.RegisterEffect(e1,0)
+end
+function YuL.SetEquipTurnOperation(e,tp,eg,ep,ev,re,r,rp)
+	local g=eg:Filter(YuL.SetEquipTurnFilter,nil)
+	g:RegisterFlagEffect(EQUIPED_THIS_TURN,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
+end
+function YuL.SetEquipTurnFilter(c)
+	return c:IsType(TYPE_EQUIP)
+end
+function Card.IsEquipTurn(c)
+	return c:GetFlagEffect(EQUIPED_THIS_TURN)>0
+end
+
+--Card.Is몬마함
+if YGOPRO_VERSION=="Percy/EDO" then
+	Card.IsM=Card.IsMonster
+	Card.IsST=Card.IsSpellTrap
+else
+	function Card.IsMonster(c)
+		return c:IsType(TYPE_MONSTER)
+	end
+	function Card.IsSpell(c)
+		return c:IsType(TYPE_SPELL)
+	end
+	function Card.IsTrap(c)
+		return c:IsType(TYPE_TRAP)
+	end
+	function Card.IsM(c)
+		return c:IsMonster(c)
+	end
+	function Card.IsST(c)
+		return c:IsType(YuL.ST)
+	end
 end
 
 --메세지
@@ -72,123 +178,6 @@ function YuL.AraneaMainEffectOperation(e,tp,eg,ep,ev,re,r,rp)
         end
     end
 end
-
-
---라바 골렘
-CARD_LAVA_GOLEM=102380
-function Card.IsLavaGolem(c)
-	return c:IsCode(CARD_LAVA_GOLEM)
-end
-function Card.IsLavaGolemCard(c)
-	return c:IsCode(CARD_LAVA_GOLEM) or c:IsSetCard(0xd6a)
-end
-function YuL.AddLavaGolemProcedure(c,condition,m)
-	RevLim(c)
-	YuL.AddLavaGolemCost(c)
-	local e1=Effect.CreateEffect(c)
-	e1:SetD(m,0)
-	e1:SetType(EFFECT_TYPE_FIELD)
-	e1:SetCode(EFFECT_SPSUMMON_PROC)
-	e1:SetProperty(EFFECT_FLAG_UNCOPYABLE)
-	e1:SetRange(LOCATION_HAND)
-	e1:SetCondition(YuL.LavaGolemCondition(condition,0))
-	c:RegisterEffect(e1)
-	local e2=Effect.CreateEffect(c)
-	e2:SetD(m,1)
-	e2:SetType(EFFECT_TYPE_FIELD)
-	e2:SetCode(EFFECT_SPSUMMON_PROC)
-	e2:SetProperty(EFFECT_FLAG_UNCOPYABLE+EFFECT_FLAG_SPSUM_PARAM)
-	e2:SetRange(LOCATION_HAND)
-	e2:SetTargetRange(POS_FACEUP,1)
-	e2:SetValue(0)
-	e2:SetCondition(YuL.LavaGolemCondition(condition,1))
-	c:RegisterEffect(e2)
-end
-function YuL.AddLavaGolemCost(c)
-	local e0=Effect.CreateEffect(c)
-	e0:SetType(EFFECT_TYPE_SINGLE)
-	e0:SetCode(EFFECT_SPSUMMON_COST)
-	e0:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
-	e0:SetCost(YuL.LavaGolemCost)
-	e0:SetOperation(YuL.LavaGolemCostOperation)
-	c:RegisterEffect(e0)
-end
-function YuL.LavaGolemCost(e,c,tp)
-	return Duel.GetActivityCount(tp,ACTIVITY_NORMALSUMMON)==0
-end
-function YuL.LavaGolemCostOperation(e,tp,eg,ep,ev,re,r,rp)
-	local c=e:GetHandler()
-	local e1=Effect.CreateEffect(c)
-	e1:SetType(EFFECT_TYPE_FIELD)
-	e1:SetCode(EFFECT_CANNOT_SUMMON)
-	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
-	e1:SetReset(RESET_PHASE+PHASE_END)
-	e1:SetTargetRange(1,0)
-	Duel.RegisterEffect(e1,tp)
-	local e2=e1:Clone()
-	e2:SetCode(EFFECT_CANNOT_MSET)
-	Duel.RegisterEffect(e2,tp)
-end
-function YuL.LavaGolemCondition(condition,p)
-	return function(e,c)
-		if c==nil then return true end
-		local tp=c:GetControler()
-		return Duel.GetLocationCount(math.abs(p-tp),LOCATION_MZONE)>0 and (condition==nil or condition(e,c))
-	end
-end
-
---레인보우 휘시
-CARD_RAINBOW_FISH=23771716
-CARD_FISH_N_KICKS=32703716
-CARD_FISH_N_BACKS=21507589
-function Card.IsRainbowFish(c)
-	return c:IsCode(CARD_RAINBOW_FISH)
-end
-function Card.IsRainbowFishCard(c)
-	return c:IsCode(CARD_RAINBOW_FISH) or c:IsSetCard(0xe18)
-end
-
---익스플로전!
-YuL.d500sp=46130346 --파이어볼
-YuL.d600sp=73134081 --화형
-YuL.d800sp=19523799 --대화재
-YuL.d1000sp1=46918794 --화염 지옥
-YuL.d1000sp2=33767325 --데스 메테오
-
---턴제 속성
-YuL.dif=100000000
-YuL.O=EFFECT_COUNT_CODE_OATH
-YuL.D=EFFECT_COUNT_CODE_DUEL
-YuL.S=EFFECT_COUNT_CODE_SINGLE
-
---속성
-ATT_X=0x0
-ATT_E=0x1
-ATT_W=0x2
-ATT_F=0x4
-ATT_N=0x8
-ATT_L=0x10
-ATT_D=0x20
-ATT_G=0x40
-
---소환타입
-SUMT_NOR=SUMMON_TYPE_NORMAL
-SUMT_ADV=SUMMON_TYPE_ADVANCE
-SUMT_DU=SUMMON_TYPE_DUAL
-SUMT_FL=SUMMON_TYPE_FLIP
-SUMT_SP=SUMMON_TYPE_SPECIAL
-SUMT_F=SUMMON_TYPE_FUSION
-SUMT_R=SUMMON_TYPE_RITUAL
-SUMT_S=SUMMON_TYPE_SYNCHRO
-SUMT_X=SUMMON_TYPE_XYZ
-SUMT_P=SUMMON_TYPE_PENDULUM
-SUMT_L=SUMMON_TYPE_LINK
-SUMT_E=SUMMON_TYPE_EQUATION
-SUMT_O=SUMMON_TYPE_ORDER
-SUMT_M=SUMMON_TYPE_MODULE
-SUMT_Q=SUMMON_TYPE_SQUARE
-SUMT_B=SUMMON_TYPE_BEYOND
-SUMT_D=SUMMON_TYPE_DELIGHT
 
 --데미지 계산 중 이외
 function Auxiliary.not_damcal()
@@ -271,9 +260,6 @@ function Card.GetAdjacentGroup(c)
 end
 
 --소환 취급
-EFFECT_CHANGE_SUMMON_TYPE=99970548
-EFFECT_ADD_SUMMON_TYPE=99970549
-EFFECT_REMOVE_SUMMON_TYPE=99970550
 local cgsumt=Card.GetSummonType
 function Card.GetSummonType(c)
 	local t = cgsumt(c)
@@ -327,58 +313,6 @@ function Group.RegisterFlagEffect(g,...)
 		tc:RegisterFlagEffect(...)
 		tc=g:GetNext()
 	end
-end
-
---이 턴에 발동된
-ACTIVATED_THIS_TURN=99979999
-local cregeff=Card.RegisterEffect
-function Card.RegisterEffect(c,e,forced,...)
-	if not YuL.EnableActivateTurn then
-		YuL.SetActivateTurn()
-	end
-	cregeff(c,e,forced)
-end
-function YuL.SetActivateTurn()
-	YuL.EnableActivateTurn=1
-	local e1=Effect.GlobalEffect()
-	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
-	e1:SetCode(EVENT_CHAIN_SOLVED)
-	e1:SetOperation(YuL.SetActivateTurnOperation)
-	Duel.RegisterEffect(e1,0)
-end
-function YuL.SetActivateTurnOperation(e,tp,eg,ep,ev,re,r,rp)
-	re:GetHandler():RegisterFlagEffect(ACTIVATED_THIS_TURN,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
-end
-function Card.IsActivateTurn(c)
-	return c:GetFlagEffect(ACTIVATED_THIS_TURN)>0
-end
-
---이 턴에 장착된
-EQUIPED_THIS_TURN=99970000
-local cregeff=Card.RegisterEffect
-function Card.RegisterEffect(c,e,forced,...)
-	if not YuL.EnableEquipTurn then
-		YuL.SetEquipTurn()
-	end
-	cregeff(c,e,forced)
-end
-function YuL.SetEquipTurn()
-	YuL.EnableEquipTurn=1
-	local e1=Effect.GlobalEffect()
-	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
-	e1:SetCode(EVENT_EQUIP)
-	e1:SetOperation(YuL.SetEquipTurnOperation)
-	Duel.RegisterEffect(e1,0)
-end
-function YuL.SetEquipTurnOperation(e,tp,eg,ep,ev,re,r,rp)
-	local g=eg:Filter(YuL.SetEquipTurnFilter,nil)
-	g:RegisterFlagEffect(EQUIPED_THIS_TURN,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
-end
-function YuL.SetEquipTurnFilter(c)
-	return c:IsType(TYPE_EQUIP)
-end
-function Card.IsEquipTurn(c)
-	return c:GetFlagEffect(EQUIPED_THIS_TURN)>0
 end
 
 --장착 (c,p,f,eqlimit,cost,tg,op,con)
@@ -652,13 +586,82 @@ function YuL.ExLimitVal(e,se,sp,st)
 	return not e:GetHandler():IsLocation(LOCATION_EXTRA)
 end
 
+--라바 골렘
+function Card.IsLavaGolem(c)
+	return c:IsCode(CARD_LAVA_GOLEM)
+end
+function Card.IsLavaGolemCard(c)
+	return c:IsCode(CARD_LAVA_GOLEM) or c:IsSetCard(0xd6a)
+end
+function YuL.AddLavaGolemProcedure(c,condition,m)
+	RevLim(c)
+	YuL.AddLavaGolemCost(c)
+	local e1=Effect.CreateEffect(c)
+	e1:SetD(m,0)
+	e1:SetType(EFFECT_TYPE_FIELD)
+	e1:SetCode(EFFECT_SPSUMMON_PROC)
+	e1:SetProperty(EFFECT_FLAG_UNCOPYABLE)
+	e1:SetRange(LOCATION_HAND)
+	e1:SetCondition(YuL.LavaGolemCondition(condition,0))
+	c:RegisterEffect(e1)
+	local e2=Effect.CreateEffect(c)
+	e2:SetD(m,1)
+	e2:SetType(EFFECT_TYPE_FIELD)
+	e2:SetCode(EFFECT_SPSUMMON_PROC)
+	e2:SetProperty(EFFECT_FLAG_UNCOPYABLE+EFFECT_FLAG_SPSUM_PARAM)
+	e2:SetRange(LOCATION_HAND)
+	e2:SetTargetRange(POS_FACEUP,1)
+	e2:SetValue(0)
+	e2:SetCondition(YuL.LavaGolemCondition(condition,1))
+	c:RegisterEffect(e2)
+end
+function YuL.AddLavaGolemCost(c)
+	local e0=Effect.CreateEffect(c)
+	e0:SetType(EFFECT_TYPE_SINGLE)
+	e0:SetCode(EFFECT_SPSUMMON_COST)
+	e0:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
+	e0:SetCost(YuL.LavaGolemCost)
+	e0:SetOperation(YuL.LavaGolemCostOperation)
+	c:RegisterEffect(e0)
+end
+function YuL.LavaGolemCost(e,c,tp)
+	return Duel.GetActivityCount(tp,ACTIVITY_NORMALSUMMON)==0
+end
+function YuL.LavaGolemCostOperation(e,tp,eg,ep,ev,re,r,rp)
+	local c=e:GetHandler()
+	local e1=Effect.CreateEffect(c)
+	e1:SetType(EFFECT_TYPE_FIELD)
+	e1:SetCode(EFFECT_CANNOT_SUMMON)
+	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+	e1:SetReset(RESET_PHASE+PHASE_END)
+	e1:SetTargetRange(1,0)
+	Duel.RegisterEffect(e1,tp)
+	local e2=e1:Clone()
+	e2:SetCode(EFFECT_CANNOT_MSET)
+	Duel.RegisterEffect(e2,tp)
+end
+function YuL.LavaGolemCondition(condition,p)
+	return function(e,c)
+		if c==nil then return true end
+		local tp=c:GetControler()
+		return Duel.GetLocationCount(math.abs(p-tp),LOCATION_MZONE)>0 and (condition==nil or condition(e,c))
+	end
+end
 
+--레인보우 휘시
+function Card.IsRainbowFish(c)
+	return c:IsCode(CARD_RAINBOW_FISH)
+end
+function Card.IsRainbowFishCard(c)
+	return c:IsCode(CARD_RAINBOW_FISH) or c:IsSetCard(0xe18)
+end
 
-
-
---④: 1턴에 1번, 자신 / 상대 턴에 발동할 수 있다. 이 카드를 주인의 패로 되돌리고, 이 카드의 엑시즈 소재 중에서 맨 위의 몬스터를 내어, 남은 카드를 그 아래에 겹쳐 엑시즈 소재로 한다. 이 효과를 발동한 턴에, 자신은 "마트료시카: 본인"을 패에서 특수 소환할 수 없다.
+--마트료시카
 
 --마트료시카 꺼내기
+--[[
+④: 1턴에 1번, 자신 / 상대 턴에 발동할 수 있다. 이 카드를 주인의 패로 되돌리고, 이 카드의 엑시즈 소재 중에서 맨 위의 몬스터를 내어, 남은 카드를 그 아래에 겹쳐 엑시즈 소재로 한다. 이 효과를 발동한 턴에, 자신은 "마트료시카: 본인"을 패에서 특수 소환할 수 없다.
+--]]
 function YuL.MatryoshkaOpen(c,ex)
 	local e1=MakeEff(c,"Qo","M")
 	if ex==nil then
@@ -873,17 +876,6 @@ function YuL.MatryoshkaSumOperation(mat,op)
 	end
 end
 
---엑시즈 베일
-local cregeff=Card.RegisterEffect
-function Card.RegisterEffect(c,e,forced,...)
-	if code==96457619 and mt.eff_ct[c][1]==e then
-		e:SetTarget(function(e,c)
-			return c:IsType(TYPE_XYZ) and c:GetOverlayCount()~=0
-		end)
-	end
-	cregeff(c,e,forced,...)
-end
-
 --Pray of...
 function YuL.PrayofTurnSet(c)
 	local e1=Effect.CreateEffect(c)
@@ -933,50 +925,46 @@ function YuL.thelibraryofbabelop(e,tp,eg,ep,ev,re,r,rp)
 end
 
 --가챠는 나쁜 문명!
-local cregeff=Card.RegisterEffect
-function Card.RegisterEffect(c,e,forced,...)
-	if not YuL.RandomSeed then
-		YuL.SetRandomSeed()
+if Duel.GetRandomNumber then
+	YuL.Random = Duel.GetRandomNumber
+else
+	function YuL.SetRandomSeed()
+		YuL.RandomSeed=0
+		local e1=Effect.GlobalEffect()
+		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+		e1:SetCode(EVENT_ADJUST)
+		e1:SetProperty(EFFECT_FLAG_NO_TURN_RESET)
+		e1:SetCountLimit(1)
+		e1:SetOperation(YuL.SetRandomSeedOperation)
+		Duel.RegisterEffect(e1,0)
 	end
-	cregeff(c,e,forced)
-end
-function YuL.SetRandomSeed()
-	YuL.RandomSeed=0
-	local e1=Effect.GlobalEffect()
-	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
-	e1:SetCode(EVENT_ADJUST)
-	e1:SetProperty(EFFECT_FLAG_NO_TURN_RESET)
-	e1:SetCountLimit(1)
-	e1:SetOperation(YuL.SetRandomSeedOperation)
-	Duel.RegisterEffect(e1,0)
-end
-function YuL.SetRandomSeedOperation(e,tp,eg,ep,ev,re,r,rp)
-	local g=Duel.GetFieldGroup(0,0xff,0xff)
-	local tc=g:GetFirst()
-	local fc=nil
-	local i=0
-	while tc do
-		fc=tc
-		tc=g:GetNext()
-		if not tc then
-			break
-		end
-		if fc:GetCode()>tc:GetCode() then
-			YuL.RandomSeed=YuL.RandomSeed+2^i
-		end
-		i=i+1
-		if i>31 then
-			break
+	function YuL.SetRandomSeedOperation(e,tp,eg,ep,ev,re,r,rp)
+		local g=Duel.GetFieldGroup(0,0xff,0xff)
+		local tc=g:GetFirst()
+		local fc=nil
+		local i=0
+		while tc do
+			fc=tc
+			tc=g:GetNext()
+			if not tc then
+				break
+			end
+			if fc:GetCode()>tc:GetCode() then
+				YuL.RandomSeed=YuL.RandomSeed+2^i
+			end
+			i=i+1
+			if i>31 then
+				break
+			end
 		end
 	end
-end
-function YuL.Random(mi,ma)
-	local seed=YuL.RandomSeed
-	local next=seed*1103515245+12345
-	local rand=next&0xffffffff
-	YuL.RandomSeed=rand
-	return rand%(ma-mi)+mi
-end
-function YuL.random(mi,ma)
-	return YuL.Random(mi,ma)
+	function YuL.Random(min,max)
+		local seed=YuL.RandomSeed
+		local next=seed*1103515245+12345
+		local rand=next&0xffffffff
+		YuL.RandomSeed=rand
+		return rand%(max-min)+min
+	end
+	YuL.random=YuL.Random
+	RegEff.sgref(function(e,c) if not YuL.RandomSeed then YuL.SetRandomSeed() end end)
 end
