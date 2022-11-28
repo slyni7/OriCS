@@ -31,7 +31,7 @@ else --Koishi/Core
 		local orics = "repositories/OriCS/script/" .. s
 		local corona = "repositories/CP19/script/" .. s
 		local exp = "expansions/script/" .. s
-		--★차후 forced에 관한 수정 바람
+		--편집자 주: 차후 forced에 관한 수정 필요
 		if not pcall(dofile(orics)) then
 			if not pcall(dofile(corona)) then
 				pcall(dofile(exp))
@@ -175,36 +175,6 @@ Effect.SetCountLimit=function(e,max,code,flag,...)
 	global_eff_count_limit_flag[e]=flag
 	setCntLmt(e,max,code,flag,...)
 end
-
---Card.RegisterEffect
---[[
-local cRegEff=Card.RegisterEffect
-Auxiliary.MetatableEffectCount=true
-function Card.RegisterEffect(c,e,forced,...)
-	local code=c:GetOriginalCode()
-	local mt=_G["c"..code]
-	if c:IsStatus(STATUS_INITIALIZING) and Auxiliary.MetatableEffectCount then
-		if not mt.eff_ct then
-			mt.eff_ct={}
-		end
-		if not mt.eff_ct[c] then
-			mt.eff_ct[c]={}
-		end
-		local ct=0
-		while true do
-			if mt.eff_ct[c][ct]==e then
-				break
-			end
-			if not mt.eff_ct[c][ct] then
-				mt.eff_ct[c][ct]=e
-				break
-			end
-			ct=ct+1
-		end
-	end
-	cRegEff(c,e,forced,...)
-end
---]]
 
 --OriCS utilities
 Duel.LoadScript("_register_effect.lua");

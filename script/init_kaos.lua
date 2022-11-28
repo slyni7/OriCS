@@ -1089,39 +1089,36 @@ end
 end
 
 --ExRitual
-	local type=Card.GetType
+--편집자 주: 이 부분도 차후에 작업할 필요가 있음
+local type=Card.GetType
 	Card.GetType=function(c)
 	if c.CardType_ExRitual then
 		return bit.bor(type(c),TYPE_FUSION)-TYPE_FUSION
 	end
 	return type(c)
 end
---
-	local otype=Card.GetOriginalType
+local otype=Card.GetOriginalType
 	Card.GetOriginalType=function(c)
 	if c.CardType_ExRitual then
 		return bit.bor(otype(c),TYPE_FUSION)-TYPE_FUSION
 	end
 	return otype(c)
 end
---
-	local ftype=Card.GetFusionType
+local ftype=Card.GetFusionType
 	Card.GetFusionType=function(c)
 	if c.CardType_ExRitual then
 		return bit.bor(ftype(c),TYPE_FUSION)-TYPE_FUSION
 	end
 	return ftype(c)
 end
---
-	local ptype=Card.GetPreviousTypeOnField
+local ptype=Card.GetPreviousTypeOnField
 	Card.GetPreviousTypeOnField=function(c)
 	if c.CardType_ExRitual then
 		return bit.bor(ptype(c),TYPE_FUSION)-TYPE_FUSION
 	end
 	return ptype(c)
 end
---
-	local itype=Card.IsType
+local itype=Card.IsType
 	Card.IsType=function(c,t)
 	if c.CardType_ExRitual then
 		if t==TYPE_FUSION then
@@ -1131,70 +1128,13 @@ end
 	end
 	return itype(c,t)
 end
---
-	local iftype=Card.IsFusionType
+local iftype=Card.IsFusionType
 	Card.IsFusionType=function(c,t)
 	if c.CardType_ExRitual then
 		if t==TYPE_FUSION then
 			return false
 		end
 		return iftype(c,bit.bor(t,TYPE_FUSION)-TYPE_FUSION)
-	end
-	return iftype(c,t)
-end
-
---"그거"
---this is not xyz monster
-	local type=Card.GetType
-	Card.GetType=function(c)
-	if c.CardType_kiniro then
-		return bit.bor(type(c),TYPE_XYZ)-TYPE_XYZ
-	end
-	return type(c)
-end
---
-	local otype=Card.GetOriginalType
-	Card.GetOriginalType=function(c)
-	if c.CardType_kiniro then
-		return bit.bor(otype(c),TYPE_XYZ)-TYPE_XYZ
-	end
-	return otype(c)
-end
---
-	local ftype=Card.GetFusionType
-	Card.GetFusionType=function(c)
-	if c.CardType_kiniro then
-		return bit.bor(ftype(c),TYPE_XYZ)-TYPE_XYZ
-	end
-	return ftype(c)
-end
---
-	local ptype=Card.GetPreviousTypeOnField
-	Card.GetPreviousTypeOnField=function(c)
-	if c.CardType_kiniro then
-		return bit.bor(ptype(c),TYPE_XYZ)-TYPE_XYZ
-	end
-	return ptype(c)
-end
---
-	local itype=Card.IsType
-	Card.IsType=function(c,t)
-	if c.CardType_kiniro then
-		if t==TYPE_XYZ then
-			return false
-		end
-		return itype(c,bit.bor(t,TYPE_XYZ)-TYPE_XYZ)
-	end
-	return itype(c,t)
-end
---
-	local iftype=Card.IsFusionType
-	Card.IsFusionType=function(c,t)
-	if c.CardType_kiniro then
-		if t==TYPE_XYZ then
-			return false
-		end
-		return iftype(c,bit.bor(t,TYPE_XYZ)-TYPE_XYZ)
 	end
 	return iftype(c,t)
 end

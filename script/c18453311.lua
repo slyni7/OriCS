@@ -15,8 +15,9 @@ function cm.initial_effect(c)
 	e2:SetTR("M",0)
 	c:RegisterEffect(e2)
 	local e3=MakeEff(c,"F","F")
-	e3:SetCode(EFFECT_HATOTAURUS_TOKEN)
+	e3:SetCode(EFFECT_CHANGE_TOKEN)
 	e3:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+	e3:SetValue(CARD_HATOTAURUS_TOKEN)
 	e3:SetTR(1,0)
 	e3:SetOperation(cm.op3)
 	c:RegisterEffect(e3)
@@ -88,7 +89,7 @@ end
 function cm.onfil3b(c,seq)
 	local dis=math.abs(2-seq)
 	local cdis=math.abs(2-c:GetSequence())
-	return c:GetSequence()<5 and c:IsCode(99970687) and cdis<dis
+	return c:GetSequence()<5 and c:IsCode(CARD_HATOTAURUS_TOKEN) and cdis<dis
 end
 function cm.ocon3b(e)
 	local c=e:GetHandler()

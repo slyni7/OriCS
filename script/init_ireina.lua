@@ -1,25 +1,27 @@
---constants
-if not CATEGORY_LVCHANGE then
-	CATEGORY_LVCHANGE=0x0
-end
+--dependencies
+if not RegEff then Duel.LoadScript("_register_effect.lua") end
 
-CARD_TIME_CAPSULE		=11961740
+--constants
+CATEGORY_LVCHANGE		=CATEGORY_LVCHANGE or 0x0
+
 CARD_EINE_KLEINE		=18452775
+CARD_MAJORITY_1e20		=18453098
 CARD_DELAYED_IF			=18453397
+CARD_TIME_CAPSULE		=11961740
 CARD_HATOTAURUS_TOKEN	=99970687
 
-EFFECT_TIME_CAPSULE		=11961740
 EFFECT_EINE_KLEINE		=18452775
 EFFECT_LINK_FACEDOWN_SUB=18453034
 EFFECT_GEMINI_STAR		=18453157
-EFFECT_EXTRA_RITUAL_MATERIAL_CHARLOTTE=18453188
+EFFECT_EXTRA_RITUAL_COST=18453188
 EFFECT_GREED_YOUNGER	=18453229
 EFFECT_GREED_SWALLOW	=18453231
 EFFECT_GREED_OLDER		=18453233
 EFFECT_ALICE_SCARLET	=18453385
 EFFECT_UNPUBLIC			=18453549
 EFFECT_THE_PHANTOM		=18453590
-EFFECT_HATOTAURUS_TOKEN	=99970687
+EFFECT_TIME_CAPSULE		=11961740
+EFFECT_CHANGE_TOKEN		=99970687
 
 EVENT_OLDGOD_FORCED		=18453128
 EVENT_ATTRIBUTE_CHANGE	=EVENT_CUSTOM+18452940
@@ -34,8 +36,6 @@ RESETS_STANDARD_DISABLE	=RESETS_STANDARD+RESET_DISABLE
 
 --globals
 GlobalArcanaFortune=false
-GlobalAttributeEvent=false
---GlobalVirusRelease=nil
 
 --fractions
 Auxiliary.FractionDrawTable={}
@@ -102,34 +102,52 @@ function Auxiliary.FindFunction(x)
 	end
 	return f
 end
-function Auxiliary.IsMaterialListSetCard(c,setcode)
-	if not c.material_setcode then return false end
-	if type(c.material_setcode)=='table' then
-		for i,scode in ipairs(c.material_setcode) do
-			if type(scode)=='string' then
-				if setcode==scode then return true end
-			else
-				if setcode&0xfff==scode&0xfff and setcode&scode==setcode then return true end
-			end
-		end
-	else
-		if type(c.material_setcode)=='string' or type(setcode)=='string' then
-			return setcode==c.material_setcode
-		else
-			return setcode&0xfff==c.material_setcode&0xfff and setcode&c.material_setcode==setcode
-		end
-	end
-	return false
-end
 function Card.AddMonsterAttributeComplete(c)
 
 end
 function Card.IsNotCode(c,...)
 	return not c:IsCode(...)
 end
-if not Duel.Exile then
+if YGOPRO_VERSION~="Core" then
 	function Duel.Exile(g,r)
-		return Duel.SendtoDeck(g,nil,-2,r)
+		Duel.SendtoDeck(g,nil,-2,r)
+		local rg=g:Filter(aux.NOT(Card.IsLocation),nil,LOCATION_ALL)
+		local rc=rg:GetFirst()
+		while rc do rc:ClearEffectRelation() end
+		return #rg
+	end
+else
+	function Duel.Exile(g,r)
+		if g==nil then return 0 end
+		local og=Group.CreateGroup()
+		local tg=(g.GetFirst and g or Group.FromCards(g))
+		local tc=sg:GetFirst()
+		while tc do
+			if tc:IsLocation(LOCATION_REMOVED) then
+				local e1=Effect.GlobalEffect()
+				e1:SetType(EFFECT_TYPE_SINGLE)
+				e1:SetCode(EFFECT_TO_GRAVE_REDIRECT)
+				e1:SetReset(RESET_EVENT+RESETS_STANDARD)
+				e1:SetValue(0x30)
+				tc:RegisterEffect(e1)
+			else
+				local e1=Effect.GlobalEffect()
+				e1:SetType(EFFECT_TYPE_SINGLE)
+				e1:SetCode(EFFECT_REMOVE_REDIRECT)
+				e1:SetReset(RESET_EVENT+RESETS_STANDARD)
+				e1:SetValue(0x30)
+				tc:RegisterEffect(e1)
+			end
+			local ov=tc:GetOverlayGroup()
+			og:Merge(ov)
+			tc=sg:GetNext()
+		end
+		local tg=sg:Filter(Card.IsLocation,nil,LOCATION_REMOVED)
+		sg:Sub(tg)
+		Duel.SendtoGrave(og,REASON_RULE)
+		local r1=Duel.SendtoGrave(tg,r)
+		local r2=Duel.Remove(sg,POS_FACEDOWN,r)
+		return r1+r2
 	end
 end
 if not Duel.HintActivation then
@@ -137,6 +155,97 @@ if not Duel.HintActivation then
 		Duel.Hint(HINT_CARD,0,te:GetHandler():GetCode())
 	end
 end
+if not Effect.SetActiveEffect then
+	function Effect.SetActiveEffect()
+		
+		return
+	end
+end
+
+--EFFECT_PUBLIC and EFFECT_UNPUBLIC
+function Auxiliary.RegisterUnpublic(e,c)
+	local eset={c:IsHasEffect(EFFECT_PUBLIC)}
+	local t={}
+	for _,te in pairs(eset) do
+		local fid=te:GetFieldID()
+		t[fid]=true
+	end
+	local e1=Effect.CreateEffect(e:GetHandler())
+	e1:SetType(EFFECT_TYPE_SINGLE)
+	e1:SetCode(EFFECT_UNPUBLIC)
+	e1:SetReset(RESET_EVENT+RESETS_STANDARD)
+	e1:SetLabelObject(t)
+	e1:SetValue(function(e,fid)
+		local t=e:GetLabelObject()
+		return t[fid]
+	end)
+	c:RegisterEffect(e1)
+end
+RegEff.sgref(function(e,c)
+	if e:GetCode()==EFFECT_PUBLIC then
+		if e:IsHasType(EFFECT_TYPE_SINGLE) then
+			local con=e:GetCondition()
+			e:SetCondition(function(e)
+				local c=e:GetHandler()
+				local eset={c:IsHasEffect(EFFECT_UNPUBLIC)}
+				for _,te in pairs(eset) do
+					local fid=e:GetFieldID()
+					local val=te:GetValue()(te,fid)
+					if val then
+						return false
+					end
+				end
+				return not con or con(e)
+			end)
+		elseif e:IsHasType(EFFECT_TYPE_FIELD) then
+			local tg=e:GetTarget()
+			e:SetTarget(function(e,c)
+				local eset={c:IsHasEffect(EFFECT_UNPUBLIC)}
+				for _,te in pairs(eset) do
+					local fid=e:GetFieldID()
+					local val=te:GetValue()(te,fid)
+					if val then
+						return false
+					end
+				end
+				return not tg or tg(e,c)
+			end)
+		end
+	end
+	return e
+end)
+RegEff.sdref(function(e,p)
+	if e:GetCode()==EFFECT_PUBLIC then
+		if e:IsHasType(EFFECT_TYPE_SINGLE) then
+			local con=e:GetCondition()
+			e:SetCondition(function(e)
+				local c=e:GetHandler()
+				local eset={c:IsHasEffect(EFFECT_UNPUBLIC)}
+				for _,te in pairs(eset) do
+					local fid=e:GetFieldID()
+					local val=te:GetValue()(te,fid)
+					if val then
+						return false
+					end
+				end
+				return not con or con(e)
+			end)
+		elseif e:IsHasType(EFFECT_TYPE_FIELD) then
+			local tg=e:GetTarget()
+			e:SetTarget(function(e,c)
+				local eset={c:IsHasEffect(EFFECT_UNPUBLIC)}
+				for _,te in pairs(eset) do
+					local fid=e:GetFieldID()
+					local val=te:GetValue()(te,fid)
+					if val then
+						return false
+					end
+				end
+				return not tg or tg(e,c)
+			end)
+		end
+	end
+end)
 
 --Link Facedown Utilities
 function Auxiliary.LinkFacedownSubFilter(c)
@@ -177,117 +286,14 @@ function Card.IsCustomType(c,ct)
 	end
 	return cict(c,ct)
 end
-if not Effect.SetActiveEffect then
-	function Effect.SetActiveEffect()
-		return
-	end
-end
-
---Melancholic utilites & overrides
-function Auxiliary.MelancholicOwnerFilter(c,tp)
-	return c:GetOwner()==tp
-end
-local ddraw=Duel.Draw
-function Duel.Draw(tp,ct,r)
-	if Duel.IsPlayerAffectedByEffect(tp,EFFECT_GREED_YOUNGER) then
-		local g=Duel.GetDecktopGroup(tp,ct)
-		Duel.DisableShuffleCheck()
-		local d=Duel.SendtoHand(g,tp,REASON_EFFECT)
-		Duel.DisableShuffleCheck(false)
-		return d
-	end
-	return ddraw(tp,ct,r)
-end
-local dipcd=Duel.IsPlayerCanDraw
-function Duel.IsPlayerCanDraw(tp,ct)
-	if ct and Duel.IsPlayerAffectedByEffect(tp,EFFECT_GREED_YOUNGER) then
-		local g=Duel.GetDecktopGroup(tp,ct)
-		return g:FilterCount(Card.IsAbleToHand,nil)==ct
-	end
-	return dipcd(tp,ct)
-end
-local dsth=Duel.SendtoHand
-function Duel.SendtoHand(g,tp,r)
-	local sg
-	if aux.GetValueType(g)=="Card" then
-		sg=Group.FromCards(g)
-	end
-	if aux.GetValueType(g)=="Group" then
-		sg=g:Clone()
-	end
-	local ct=#sg
-	if not tp then
-		local g0=sg:Filter(Auxiliary.MelancholicOwnerFilter,nil,0)
-		local g1=sg:Filter(Auxiliary.MelancholicOwnerFilter,nil,1)
-		if Duel.IsPlayerAffectedByEffect(0,18452752)
-			and Duel.IsPlayerAffectedByEffect(0,EFFECT_GREED_YOUNGER)
-			and Duel.IsPlayerCanDraw(0) then
-			sg:Sub(g0)
-			Duel.Draw(0,#g0,REASON_EFFECT)
-		end
-		if Duel.IsPlayerAffectedByEffect(1,18452752)
-			and Duel.IsPlayerAffectedByEffect(1,EFFECT_GREED_YOUNGER)
-			and Duel.IsPlayerCanDraw(1) then
-			sg:Sub(g1)
-			Duel.Draw(1,#g1,REASON_EFFECT)
-		end
-		if #sg>0 then
-			dsth(g,nil,r)
-		end
-		return ct
-	else
-		if Duel.IsPlayerAffectedByEffect(tp,18452752)
-			and Duel.IsPlayerAffectedByEffect(tp,EFFECT_GREED_YOUNGER)
-			and Duel.IsPlayerCanDraw(tp) then
-			return Duel.Draw(tp,ct,REASON_EFFECT)
-		else
-			return dsth(g,tp,r)
-		end
-	end
-end
-
---Charlotte overrides
-local dgritmat=Duel.GetRitualMaterial
-function Duel.GetRitualMaterial(p)
-	local g=dgritmat(p)
-	local cg=Duel.GetMatchingGroup(Card.IsHasEffect,p,0,LOCATION_MZONE,nil,EFFECT_EXTRA_RITUAL_MATERIAL_CHARLOTTE)
-	g:Merge(cg)
-	return g
-end
-local cgritlev=Card.GetRitualLevel
-function Card.GetRitualLevel(c,rc)
-	local lv=cgritlev(c,rc)
-	if lv>0 then
-		return lv
-	end
-	local eset={c:IsHasEffect(EFFECT_RITUAL_LEVEL)}
-	for _,te in ipairs(eset) do
-		local val=te:GetValue()
-		if val and val(te,rc)>0 then
-			return val(te,rc)
-		end
-	end
-	return 0
-end
 
 --common overrides
-local gid=GetID
 EDOCard={}
+local gid=GetID
 function GetID(...)
 	local s,id=gid(...)
 	EDOCard[id]=true
 	return gid(...)
-end
-local cregeff=Card.RegisterEffect
-function Card.RegisterEffect(c,e,forced,...)
-	local code=c:GetOriginalCode()
-	local mt=_G["c"..code]
-	cregeff(c,e,forced,...)
-	if e:IsHasType(EFFECT_TYPE_SINGLE) and (e:GetCode()==EFFECT_TRAP_ACT_IN_HAND or e:GetCode()==EFFECT_QP_ACT_IN_NTPHAND)
-		and e:IsHasProperty(EFFECT_FLAG_INITIAL) and not e:IsHasProperty(EFFECT_FLAG_CANNOT_DISABLE) then
-		local prop=e:GetProperty()
-		e:SetProperty(prop|EFFECT_FLAG_CANNOT_DISABLE)
-	end
 end
 local ccopyeff=Card.CopyEffect
 function Card.CopyEffect(c,code,...)
@@ -385,6 +391,7 @@ function Auxiliary.ChainDelay(effect)
 	end
 end
 
+--
 Auxiliary.TriggeringEffect=nil
 local est=Effect.SetTarget
 function Effect.SetTarget(e,tg)
@@ -456,7 +463,65 @@ function Duel.XyzSummon(...)
 	end
 end
 
---릿카는 빠르다
+--힘세고 강한 후부키 토큰
+--[[
+function Duel.GetChangedTokenCode(code,tp)
+	local eset={Duel.IsPlayerAffectedByEffect(p,EFFECT_CHANGE_TOKEN)}
+	if #eset>0 and Duel.ReadCard(code,CARDDATA_TYPE)&TYPE_TOKEN>0 then
+		
+	else
+		return code
+	end
+end
+--]]
+local dipcssm=Duel.IsPlayerCanSpecialSummonMonster
+function Duel.IsPlayerCanSpecialSummonMonster(...)
+	local t={...}
+	local p=t[1]
+	local eset={Duel.IsPlayerAffectedByEffect(p,EFFECT_CHANGE_TOKEN)}
+	local code=t[2]
+	if #eset>0 and Duel.ReadCard(code,CARDDATA_TYPE)&TYPE_TOKEN>0 then
+		t[2]=CARD_HATOTAURUS_TOKEN
+		t[3]=0x0
+		t[4]=TYPE_MONSTER|TYPE_NORMAL|TYPE_TOKEN
+		t[5]=3000
+		t[6]=3000
+		t[7]=8
+		t[8]=RACE_BEASTWARRIOR
+		t[9]=ATTRIBUTE_DARK
+		return dipcssm(table.unpack(t))
+	else
+		return dipcssm(...)
+	end
+end
+local dcretok=Duel.CreateToken
+function Duel.CreateToken(...)
+	local t={...}
+	local p=t[1]
+	local eset={Duel.IsPlayerAffectedByEffect(p,EFFECT_CHANGE_TOKEN)}
+	local code=t[2]
+	if #eset>0 and Duel.ReadCard(code,CARDDATA_TYPE)&TYPE_TOKEN>0 then
+		t[2]=CARD_HATOTAURUS_TOKEN
+		local tc=dcretok(table.unpack(t))
+		for _,te in pairs(eset) do
+			local op=te:GetOperation()
+			op(tc)
+		end
+		return tc
+	else
+		return dcretok(...)
+	end
+end
+
+--[[
+############  ############  ############  ############  ############
+##        ##  ##        ##  ##        ##  ##        ##  ##        ##
+##   ##   ##  ##   ##   ##  ##   ##   ##  ##   ##   ##  ##   ##   ##
+##        ##  ##        ##  ##        ##  ##        ##  ##        ##
+############  ############  ############  ############  ############
+--]]
+
+--스크립트 속기 관련: 릿카는 빠르다
 Auxiliary.IreinaCurrentXyzHandler=nil
 function Auxiliary.WriteIreinaEffect(e,i,s)
 	local c=e:GetOwner()
@@ -1136,69 +1201,51 @@ function Duel.SPOI(cc,cat,eg,ev,ep,loc)
 	Duel.SetPossibleOperationInfo(cc,cat,eg,ev,ep,LSTN(loc))
 end
 
---힘세고 강한 후부키 토큰
-local dipcssm=Duel.IsPlayerCanSpecialSummonMonster
-function Duel.IsPlayerCanSpecialSummonMonster(...)
-	local t={...}
-	local p=t[1]
-	local eset={Duel.IsPlayerAffectedByEffect(p,EFFECT_HATOTAURUS_TOKEN)}
-	local code=t[2]
-	if #eset>0 and Duel.ReadCard(code,CARDDATA_TYPE)&TYPE_TOKEN>0 then
-		t[2]=CARD_HATOTAURUS_TOKEN
-		t[3]=0x0
-		t[4]=TYPE_MONSTER|TYPE_NORMAL|TYPE_TOKEN
-		t[5]=3000
-		t[6]=3000
-		t[7]=8
-		t[8]=RACE_BEASTWARRIOR
-		t[9]=ATTRIBUTE_DARK
-		return dipcssm(table.unpack(t))
-	else
-		return dipcssm(...)
-	end
-end
-local dcretok=Duel.CreateToken
-function Duel.CreateToken(...)
-	local t={...}
-	local p=t[1]
-	local eset={Duel.IsPlayerAffectedByEffect(p,EFFECT_HATOTAURUS_TOKEN)}
-	local code=t[2]
-	if #eset>0 and Duel.ReadCard(code,CARDDATA_TYPE)&TYPE_TOKEN>0 then
-		t[2]=CARD_HATOTAURUS_TOKEN
-		local tc=dcretok(table.unpack(t))
-		for _,te in pairs(eset) do
-			local op=te:GetOperation()
-			op(tc)
-		end
-		return tc
-	else
-		return dcretok(...)
-	end
-end
+--[[
+############  ############  ############  ############  ############
+##        ##  ##        ##  ##        ##  ##        ##  ##        ##
+##   ##   ##  ##   ##   ##  ##   ##   ##  ##   ##   ##  ##   ##   ##
+##        ##  ##        ##  ##        ##  ##        ##  ##        ##
+############  ############  ############  ############  ############
+--]]
 
---Arcana Force Utilities
-ArcanaForceTarotCard={62892347,
-8396952,
-82710001,
-35781051,
-61175706,
-82710002,
-97574404,
-34568403,
-82710003,
-82710004,
-82710005,
-82710006,
-82710007,
-82710008,
-60953118,
-82710009,
-82710010,
-82710013,
-97452817,
-82710014,
-82710021,
-23846921}
+--common cregeff
+RegEff.sgref(function(e,c)
+	if e:IsHasType(EFFECT_TYPE_SINGLE)
+		and (e:GetCode()==EFFECT_TRAP_ACT_IN_HAND or e:GetCode()==EFFECT_QP_ACT_IN_NTPHAND)
+		and e:IsHasProperty(EFFECT_FLAG_INITIAL) then
+			local prop=e:GetProperty()
+			e:SetProperty(prop|EFFECT_FLAG_CANNOT_DISABLE)
+	end
+	return e
+end)
+
+--Arcana Force utilities
+--편집자 주: 협업 관련해서 수정 여지 있음
+ArcanaForceTarotCard={
+	62892347,
+	8396952,
+	82710001,
+	35781051,
+	61175706,
+	82710002,
+	97574404,
+	34568403,
+	82710003,
+	82710004,
+	82710005,
+	82710006,
+	82710007,
+	82710008,
+	60953118,
+	82710009,
+	82710010,
+	82710013,
+	97452817,
+	82710014,
+	82710021,
+	23846921
+}
 function Auxiliary.IsArcanaListed(c)
 	return c:IsCode(36690018,73206827,82710015,82710016,82710017,82710018,82710019,82710020,82710021,99189322)
 end
@@ -1219,38 +1266,7 @@ function Auxiliary.IsArcanaCard(c)
 	return c:IsSetCard(0x5) or c:IsCode(6150044,64454614,82710016,99189322)
 end
 
---Alchemist Utilities
-function Auxiliary.RegisterAttributeEvent(c)
-	if GlobalAttributeEvent then
-		return
-	end
-	GlobalAttributeEvent=true
-	local ge1=Effect.CreateEffect(c)
-	ge1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
-	ge1:SetCode(EVENT_ADJUST)
-	ge1:SetOperation(Auxiliary.AttributeEventOperation)
-	Duel.RegisterEffect(ge1,0)
-end
-function Auxiliary.AttributeEventOperation(e,tp,eg,ep,ev,re,r,rp)
-	local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
-	local ag=Group.CreateGroup()
-	local tc=g:GetFirst()
-	while tc do
-		if tc:GetFlagEffect(FLAG_EFFECT_ATTRIBUTE)<1 then
-			tc:RegisterFlagEffect(FLAG_EFFECT_ATTRIBUTE,RESET_EVENT+RESETS_STANDARD,0,0)
-			tc:SetFlagEffectLabel(FLAG_EFFECT_ATTRIBUTE,tc:GetAttribute())
-		elseif tc:GetFlagEffectLabel(FLAG_EFFECT_ATTRIBUTE)~=tc:GetAttribute() then
-			tc:SetFlagEffectLabel(FLAG_EFFECT_ATTRIBUTE,tc:GetAttribute())
-			ag:AddCard(tc)
-		end
-		tc=g:GetNext()
-	end
-	if #ag>0 then
-		Duel.RaiseEvent(ag,EVENT_ATTRIBUTE_CHANGE,e,0,0,0,0)
-	end
-end
-
---Angel Notes Utilities
+--Angel Notes utilities
 function Auxiliary.AngelNotesCantabileFilter(c,tc)
 	local eset={c:IsHasEffect(76859168)}
 	for _,te in ipairs(eset) do
@@ -1288,9 +1304,137 @@ function Auxiliary.AngelNotesCantabileOperation(e,tp,eg,ep,ev,re,r,rp)
 	return false
 end
 
---Eine Kleine Utilities
+--Melancholic utilites & overrides
+function Auxiliary.MelancholicOwnerFilter(c,tp)
+	return c:GetOwner()==tp
+end
+local dsth=Duel.SendtoHand
+function Duel.SendtoHand(g,tp,r)
+	local sg
+	if aux.GetValueType(g)=="Card" then
+		sg=Group.FromCards(g)
+	end
+	if aux.GetValueType(g)=="Group" then
+		sg=g:Clone()
+	end
+	local ct=#sg
+	if not tp then
+		local g0=sg:Filter(Auxiliary.MelancholicOwnerFilter,nil,0)
+		local g1=sg:Filter(Auxiliary.MelancholicOwnerFilter,nil,1)
+		if Duel.IsPlayerAffectedByEffect(0,18452752)
+			and Duel.IsPlayerAffectedByEffect(0,EFFECT_GREED_YOUNGER)
+			and Duel.IsPlayerCanDraw(0) then
+			sg:Sub(g0)
+			Duel.Draw(0,#g0,REASON_EFFECT)
+		end
+		if Duel.IsPlayerAffectedByEffect(1,18452752)
+			and Duel.IsPlayerAffectedByEffect(1,EFFECT_GREED_YOUNGER)
+			and Duel.IsPlayerCanDraw(1) then
+			sg:Sub(g1)
+			Duel.Draw(1,#g1,REASON_EFFECT)
+		end
+		if #sg>0 then
+			dsth(g,nil,r)
+		end
+		return ct
+	else
+		if Duel.IsPlayerAffectedByEffect(tp,18452752)
+			and Duel.IsPlayerAffectedByEffect(tp,EFFECT_GREED_YOUNGER)
+			and Duel.IsPlayerCanDraw(tp) then
+			return Duel.Draw(tp,ct,REASON_EFFECT)
+		else
+			return dsth(g,tp,r)
+		end
+	end
+end
 
---Silent Majority Utilities
+--Virus utilities (setcodes)
+GlobalVirusRelease=nil
+
+local ddraw=Duel.Draw
+function Duel.Draw(tp,ct,r)
+	if Duel.IsPlayerAffectedByEffect(tp,EFFECT_GREED_YOUNGER) then
+		local g=Duel.GetDecktopGroup(tp,ct)
+		Duel.DisableShuffleCheck()
+		local d=Duel.SendtoHand(g,tp,REASON_EFFECT)
+		Duel.DisableShuffleCheck(false)
+		return d
+	end
+	return ddraw(tp,ct,r)
+end
+local dipcd=Duel.IsPlayerCanDraw
+function Duel.IsPlayerCanDraw(tp,ct)
+	if ct and Duel.IsPlayerAffectedByEffect(tp,EFFECT_GREED_YOUNGER) then
+		local g=Duel.GetDecktopGroup(tp,ct)
+		return g:FilterCount(Card.IsAbleToHand,nil)==ct
+	end
+	return dipcd(tp,ct)
+end
+function Auxiliary.IsMaterialListSetCard(c,setcode)
+	if not c.material_setcode then return false end
+	if type(c.material_setcode)=='table' then
+		for i,scode in ipairs(c.material_setcode) do
+			if type(scode)=='string' then
+				if setcode==scode then return true end
+			else
+				if setcode&0xfff==scode&0xfff and setcode&scode==setcode then return true end
+			end
+		end
+	else
+		if type(c.material_setcode)=='string' or type(setcode)=='string' then
+			return setcode==c.material_setcode
+		else
+			return setcode&0xfff==c.material_setcode&0xfff and setcode&c.material_setcode==setcode
+		end
+	end
+	return false
+end
+
+--Alchemist utilities
+GlobalAttributeEvent=false
+function Auxiliary.RegisterAttributeEvent(c)
+	if GlobalAttributeEvent then
+		return
+	end
+	GlobalAttributeEvent=true
+	local ge1=Effect.CreateEffect(c)
+	ge1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+	ge1:SetCode(EVENT_ADJUST)
+	ge1:SetOperation(Auxiliary.AttributeEventOperation)
+	Duel.RegisterEffect(ge1,0)
+end
+function Auxiliary.AttributeEventOperation(e,tp,eg,ep,ev,re,r,rp)
+	local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
+	local ag=Group.CreateGroup()
+	local tc=g:GetFirst()
+	while tc do
+		if tc:GetFlagEffect(FLAG_EFFECT_ATTRIBUTE)<1 then
+			tc:RegisterFlagEffect(FLAG_EFFECT_ATTRIBUTE,RESET_EVENT+RESETS_STANDARD,0,0)
+			tc:SetFlagEffectLabel(FLAG_EFFECT_ATTRIBUTE,tc:GetAttribute())
+		elseif tc:GetFlagEffectLabel(FLAG_EFFECT_ATTRIBUTE)~=tc:GetAttribute() then
+			tc:SetFlagEffectLabel(FLAG_EFFECT_ATTRIBUTE,tc:GetAttribute())
+			ag:AddCard(tc)
+		end
+		tc=g:GetNext()
+	end
+	if #ag>0 then
+		Duel.RaiseEvent(ag,EVENT_ATTRIBUTE_CHANGE,e,0,0,0,0)
+	end
+end
+RegEff.scref(40410110,0,function(e,c)
+	if not c:IsStatus(STATUS_INITIALIZING) then return e end
+	e:SetCountLimit(9999)
+	e:SetCost(function(e,tp,eg,ep,ev,re,r,rp,chk)
+		local c=e:GetHandler()
+		if chk==0 then
+			return c:GetFlagEffect(40410110)<1 or (c:GetFlagEffect(40410110)<2 and Duel.IsPlayerAffectedByEffect(tp,18452953))
+		end
+		c:RegisterFlagEffect(40410110,RESET_PHASE+PHASE_END+RESET_EVENT+0x1ec0000,0,1)
+	end)
+	return e
+end)
+
+--Silent Majority utilities
 GlobalSilentMajority=nil
 function Auxiliary.RegisterSilentMajority()
 	if GlobalSilentMajority then
@@ -1326,8 +1470,8 @@ function Auxiliary.SilentMajorityOperation(e,tp,eg,ep,ev,re,r,rp)
 			ge1:SetRange(LOCATION_MZONE)
 			ge1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 			ge1:SetValue(SUMMON_TYPE_LINK)
-			ge1:SetCountLimit(1,18453098)
-			ge1:SetDescription(aux.Stringid(18453098,0))
+			ge1:SetCountLimit(1,CARD_MAJORITY_1e20)
+			ge1:SetDescription(aux.Stringid(CARD_MAJORITY_1e20,0))
 			ge1:SetCondition(Auxiliary.SilentMajorityLinkCondition1)
 			ge1:SetOperation(Auxiliary.SilentMajorityLinkOperation1)
 			local ge2=Effect.GlobalEffect()
@@ -1364,7 +1508,7 @@ function Auxiliary.SilentMajorityLinkCondition1(e,c,og)
 		return true
 	end
 	local tp=c:GetControler()
-	local lg=SilentMajorityGroups[tp]:Filter(function(c) return c:GetOriginalCode()==18453098 end,nil)
+	local lg=SilentMajorityGroups[tp]:Filter(Card.IsOriginalCode,nil,CARD_MAJORITY_1e20)
 	local lc=lg:GetFirst()
 	if not lc:IsCanBeSpecialSummoned(e,SUMMON_TYPE_LINK,tp,false,false) then
 		return false
@@ -1383,7 +1527,7 @@ function Auxiliary.SilentMajorityLinkCondition1(e,c,og)
 	return mg:CheckSubGroup(Auxiliary.LCheckSilentGoal,minc,maxc,tp,lc,nil,c)
 end
 function Auxiliary.SilentMajorityLinkOperation1(e,tp,eg,ep,ev,re,r,rp,c,sg,og)
-	local lg=SilentMajorityGroups[tp]:Filter(function(c) return c:GetOriginalCode()==18453098 end,nil)
+	local lg=SilentMajorityGroups[tp]:Filter(Card.IsOriginalCode,nil,CARD_MAJORITY_1e20)
 	local lc=lg:GetFirst()
 	local mg=Auxiliary.GetLinkMaterials(tp,f,lc)
 	mg:AddCard(c)
@@ -1404,8 +1548,7 @@ if IREDO_COMES_TRUE or (YGOPRO_VERSION~="Core") then
 	Auxiliary.RegisterSilentMajority()
 end
 
---Old God Utilities
-Auxiliary.oldgod_codes={5257687,70307656,78636495,39180960,75285069,4035199,31242786,2792265,7914843,44913552,18453130}
+--Old God utilities
 function Auxiliary.OldGodCost1(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then
@@ -1420,8 +1563,51 @@ function Auxiliary.OldGodCost2(e,tp,eg,ep,ev,re,r,rp,chk)
 	end
 	c:RegisterFlagEffect(FLAG_EFFECT_OLDGOD,RESET_EVENT+0x1ec0000,0,0)
 end
+local OldGodScrefFunc1 <const> = function(e,c)
+	local code=c:GetOriginalCode()
+	local mt=_G["c"..code]
+	mt.oldgod_mzone=true
+	local e1=Effect.CreateEffect(c)
+	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
+	e1:SetCode(EVENT_OLDGOD_FORCED)
+	e:SetCost(Auxiliary.OldGodCost1)
+	e1:SetCost(Auxiliary.OldGodCost2)
+	local et=e:GetTarget(); if et then e1:SetTarget(et) end
+	e1:SetOperation(e:GetOperation())
+	return {e,e1}
+end
+local OldGodScrefFunc2 <const> = function(e,c)
+	local code=c:GetOriginalCode()
+	local mt=_G["c"..code]
+	mt.oldgod_mzone=true
+	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
+	e1:SetCode(EVENT_OLDGOD_FORCED)
+	e1:SetOperation(e:GetOperation())
+	return {e,e1}
+end
+Auxiliary.oldgod_codes={
+	5257687,	--X·E·N·O
+	70307656,	--그럿지
+	78636495,	--뉴트
+	39180960,	--리그라스 리퍼
+	75285069,	--모이스처 성인
+	4035199,	--셰이프 스내치
+	31242786,	--영혼 흡수자
+	2792265,	--이형의 추종자
+	7914843,	--잭 트레이거 마그넷
+	44913552,	--타임 이터
+	18453130	--(custom) N·U·L·L
+}
+RegEff.scref(5257687,0,OldGodScrefFunc1)
+RegEff.scref(70307656,2,OldGodScrefFunc2)
+RegEff.scref(78636495,0,OldGodScrefFunc1)
+RegEff.scref(39180960,0,OldGodScrefFunc1)
+RegEff.scref(75285069,1,OldGodScrefFunc1)
+RegEff.scref(7914843,0,OldGodScrefFunc1)
+RegEff.scref(44913552,0,OldGodScrefFunc2)
+RegEff.scref(18453130,0,OldGodScrefFunc2)
 
---Gemini Star Utilities
+--Gemini Star utilities
 function Auxiliary.GeminiStarValue(e,c)
 	local tp=e:GetHandlerPlayer()
 	return 0,0x1f,0xff00ff,#{Duel.IsPlayerAffectedByEffect(tp,EFFECT_GEMINI_STAR)}
@@ -1473,23 +1659,613 @@ function Auxiliary.EnableReverseDualAttribute(c)
 	e3:SetValue(TYPE_EFFECT)
 	c:RegisterEffect(e3)
 end
+local Auxiliary.GeminiStarScrefFunc <const> = function(e,c)
+	local e1=Effect.CreateEffect(c)
+	e1:SetType(EFFECT_TYPE_EQUIP)
+	e1:SetCode(EFFECT_UPDATE_ATTACK)
+	e1:SetValue(0)
+	local e2=e1:Clone()
+	e2:SetCode(EFFECT_UPDATE_DEFENSE)
+	return {e,e1,e2}
+end
+RegEff.scref(41587307,0,GeminiStarScrefFunc)	--부러진 죽도
+RegEff.scref(42199039,0,GeminiStarScrefFunc)	--요도 죽도
+RegEff.scref(99970320,0,GeminiStarScrefFunc)	--####
 
---Aroma Utilities
-GlobalAromaRecover={}
-GlobalAromaRecover[0]=false
-GlobalAromaRecover[1]=false
-local ge1=Effect.GlobalEffect()
-ge1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
-ge1:SetCode(EVENT_ADJUST)
-ge1:SetCondition(function(e,tp,eg,ep,ev,re,r,rp)
-	return GlobalAromaRecover[0] or GlobalAromaRecover[1]
-end)
-ge1:SetOperation(function(e,tp,eg,ep,ev,re,r,rp)
-	GlobalAromaRecover[0]=false
-	GlobalAromaRecover[1]=false
-end)
-Duel.RegisterEffect(ge1,0)
-local ge2=ge1:Clone()
-ge2:SetCode(EVENT_RECOVER)
-Duel.RegisterEffect(ge2,0)
+--Charlotte overrides
+EFFECT_EXTRA_RITUAL_MATERIAL_CHARLOTTE=EFFECT_EXTRA_RITUAL_COST
+local dgritmat=Duel.GetRitualMaterial
+function Duel.GetRitualMaterial(p)
+	local g=dgritmat(p)
+	local cg=Duel.GetMatchingGroup(Card.IsHasEffect,p,0,LOCATION_MZONE,nil,EFFECT_EXTRA_RITUAL_COST)
+	g:Merge(cg)
+	return g
+end
+local cgritlev=Card.GetRitualLevel
+function Card.GetRitualLevel(c,rc)
+	local lv=cgritlev(c,rc)
+	if lv>0 then
+		return lv
+	end
+	local eset={c:IsHasEffect(EFFECT_RITUAL_LEVEL)}
+	for _,te in ipairs(eset) do
+		local val=te:GetValue()
+		if val and val(te,rc)>0 then
+			return val(te,rc)
+		end
+	end
+	return 0
+end
 
+--Aroma utilities
+Global_AromaRecover={[0]=false,[1]=false}
+local GlobalEffect_Aroma1=Effect.GlobalEffect()
+GlobalEffect_Aroma1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+GlobalEffect_Aroma1:SetCode(EVENT_ADJUST)
+GlobalEffect_Aroma1:SetCondition(function(e,tp,eg,ep,ev,re,r,rp)
+	return Global_AromaRecover[0] or Global_AromaRecover[1]
+end)
+GlobalEffect_Aroma1:SetOperation(function(e,tp,eg,ep,ev,re,r,rp)
+	Global_AromaRecover[0]=false
+	Global_AromaRecover[1]=false
+end)
+Duel.RegisterEffect(GlobalEffect_Aroma1,0)
+local GlobalEffect_Aroma2=GlobalEffect_Aroma1:Clone()
+GlobalEffect_Aroma2:SetCode(EVENT_RECOVER)
+Duel.RegisterEffect(GlobalEffect_Aroma2,0)
+
+local AromaScrefFunc <const> = function(e,c,amount)
+	e:SetOperation(function(e,tp,eg,ep,ev,re,r,rp)
+		local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
+		if not p or not d then
+			Duel.Recover(tp,amount,REASON_EFFECT)
+			return
+		end
+		Duel.Recover(p,d,REASON_EFFECT)
+	end)
+	return e
+end
+RegEff.scref(38199696,0,AromaScrefFunc,500)	--레드 포션
+RegEff.scref(20871001,0,AromaScrefFunc,400)	--블루 포션
+
+--Eine Kleine utilities
+local EineKleineScrefTable <const> = {
+	[18452777] = {[0]=function(e,c)
+		e:SetCost(function(e,tp,eg,ep,ev,re,r,rp,chk)
+			local g1=Duel.GMGroup(mt.cfil1,tp,"E",0,nil)
+			local g2=Group.CreateGroup()
+			if Duel.IsPlayerAffectedByEffect(tp,EFFECT_GREED_SWALLOW) then
+				local sg=Duel.GetFieldGroup(tp,LSTN("D"),0)
+				if #sg<10 then
+					return false
+				end
+				local ct=sg:GetClassCount(Card.GetCode)
+				for i=1,10 do
+					local seq=-1
+					local tc=sg:GetFirst()
+					local rcard=nil
+					while tc do
+						if tc:GetSequence()>seq
+							and (i>ct or not g2:IsExists(Card.IsCode,1,nil,tc:GetCode())) then
+							seq=tc:GetSequence()
+							rcard=tc
+						end
+						tc=sg:GetNext()
+					end
+					g2:AddCard(rcard)
+				end
+			else
+				g2=Duel.GetDecktopGroup(tp,10)
+			end
+			if chk==0 then
+				return #g1>5 and g2:FilterCount(Card.IsAbleToRemoveAsCost,nil,POS_FACEDOWN)==10
+					and Duel.GetFieldGroupCount(tp,LSTN("D"),0)>13
+			end
+			Duel.DisableShuffleCheck()
+			local rg=Group.CreateGroup()
+			if Duel.IsPlayerAffectedByEffect(tp,EFFECT_GREED_SWALLOW) then
+				local ct=g1:GetClassCount(Card.GetCode)
+				for i=1,6 do
+					if i>ct then
+						local tg=g1:Clone()
+						tg:Sub(rg)
+						local sg=tg:RandomSelect(tp,1)
+						rg:Merge(sg)
+					else
+						local tg=g1:Clone()
+						local tc=rg:GetFirst()
+						while tc do
+							local cg=tg:Filter(Card.IsCode,nil,tc:GetCode())
+							tg:Sub(cg)
+							tc=rg:GetNext()
+						end
+						local sg=tg:RandomSelect(tp,1)
+						rg:Merge(sg)
+					end
+				end
+			else
+				rg=g1:RandomSelect(tp,6)
+			end
+			rg:Merge(g2)
+			Duel.Remove(rg,POS_FACEDOWN,REASON_COST)
+		end)
+		e:SetOperation(function(e,tp,eg,ep,ev,re,r,rp)
+			local c=e:GetHandler()
+			Duel.Draw(tp,4,REASON_EFFECT)
+			if e:IsHasType(EFFECT_TYPE_ACTIVATE) and not Duel.IsPlayerAffectedByEffect(tp,EFFECT_GREED_OLDER) then
+				local e1=MakeEff(c,"F")
+				e1:SetCode(EFFECT_CANNOT_DRAW)
+				e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+				e1:SetReset(RESET_PHASE+PHASE_END)
+				e1:SetTR(1,0)
+				Duel.RegisterEffect(e1,tp)
+			end
+		end)
+	end},
+	[35261759] = {[0]=function(e,c)
+		e:SetCost(function(e,tp,eg,ep,ev,re,r,rp,chk)
+			local g=Group.CreateGroup()
+			if Duel.IsPlayerAffectedByEffect(tp,EFFECT_GREED_SWALLOW) then
+				local sg=Duel.GetFieldGroup(tp,LSTN("D"),0)
+				if #sg<10 then
+					return false
+				end
+				local ct=sg:GetClassCount(Card.GetCode)
+				for i=1,10 do
+					local seq=-1
+					local tc=sg:GetFirst()
+					local rcard=nil
+					while tc do
+						if tc:GetSequence()>seq
+							and (i>ct or not g:IsExists(Card.IsCode,1,nil,tc:GetCode())) then
+							seq=tc:GetSequence()
+							rcard=tc
+						end
+						tc=sg:GetNext()
+					end
+					g:AddCard(rcard)
+				end
+			else
+				g=Duel.GetDecktopGroup(tp,10)
+			end
+			if chk==0 then
+				return g:FilterCount(Card.IsAbleToRemoveAsCost,nil,POS_FACEDOWN)==10
+					and Duel.GetFieldGroupCount(tp,LSTN("D"),0)>11
+			end
+			Duel.DisableShuffleCheck()
+			Duel.Remove(g,POS_FACEDOWN,REASON_COST)
+		end)
+	end},
+	[84211599] = {[0]=function(e,c)
+		e:SetTarget(function(e,tp,eg,ep,ev,re,r,rp,chk)
+			local g=Duel.GetMatchingGroup(Card.IsAbleToRemoveAsCost,tp,LOCATION_EXTRA,0,nil,POS_FACEDOWN)
+			local count=Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)
+			local b1=#g>=3 and count>=3 and Duel.GetDecktopGroup(tp,3):IsExists(Card.IsAbleToHand,1,nil)
+			local b2=#g>=6 and count>=6 and Duel.GetDecktopGroup(tp,6):IsExists(Card.IsAbleToHand,1,nil)
+			if chk==0 then
+				if e:GetLabel()~=100 then return false end
+				e:SetLabel(0)
+				return (Duel.GetFlagEffect(tp,84211599)==0 or Duel.IsPlayerAffectedByEffect(tp,EFFECT_GREED_SWALLOW))
+					and (b1 or b2)
+			end
+			local op=0
+			if b1 and b2 then
+				op=Duel.SelectOption(tp,aux.Stringid(84211599,0),aux.Stringid(84211599,1))
+			else
+				op=Duel.SelectOption(tp,aux.Stringid(84211599,0))
+			end
+			local ct= op==0 and 3 or 6
+			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
+			local rg=g:Select(tp,ct,ct,nil)
+			Duel.Remove(rg,POS_FACEDOWN,REASON_COST)
+			Duel.SetTargetPlayer(tp)
+			Duel.SetTargetParam(ct)
+			Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,0,LOCATION_DECK)
+			if not e:IsHasType(EFFECT_TYPE_ACTIVATE) or Duel.IsPlayerAffectedByEffect(tp,EFFECT_GREED_SWALLOW) then return end
+			local e1=Effect.CreateEffect(e:GetHandler())
+			e1:SetType(EFFECT_TYPE_FIELD)
+			e1:SetCode(EFFECT_CANNOT_DRAW)
+			e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_OATH)
+			e1:SetTargetRange(1,0)
+			e1:SetReset(RESET_PHASE+PHASE_END)
+			Duel.RegisterEffect(e1,tp)
+		end)
+		e:SetOperation(function(e,tp,eg,ep,ev,re,r,rp)
+			local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
+			Duel.ConfirmDecktop(p,d)
+			local g=Duel.GetDecktopGroup(p,d)
+			if #g>0 then
+				Duel.DisableShuffleCheck()
+				Duel.Hint(HINT_SELECTMSG,p,HINTMSG_ATOHAND)
+				local sc=g:Select(p,1,1,nil):GetFirst()
+				if sc:IsAbleToHand() then
+					Duel.SendtoHand(sc,nil,REASON_EFFECT)
+					Duel.ConfirmCards(1-p,sc)
+					Duel.ShuffleHand(p)
+				else
+					Duel.SendtoGrave(sc,REASON_RULE)
+				end
+			end
+			if #g>1 then
+				Duel.SortDecktop(tp,tp,#g-1)
+				for i=1,#g-1 do
+					local dg=Duel.GetDecktopGroup(tp,1)
+					Duel.MoveSequence(dg:GetFirst(),1)
+				end
+			end
+			if not e:IsHasType(EFFECT_TYPE_ACTIVATE) or Duel.IsPlayerAffectedByEffect(tp,EFFECT_GREED_SWALLOW) then return end
+			local e1=Effect.CreateEffect(e:GetHandler())
+			e1:SetType(EFFECT_TYPE_FIELD)
+			e1:SetCode(EFFECT_CHANGE_DAMAGE)
+			e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+			e1:SetTargetRange(0,1)
+			e1:SetValue(mt.damval)
+			e1:SetReset(RESET_PHASE+PHASE_END)
+			Duel.RegisterEffect(e1,tp)
+		end)
+	end}
+}
+RegEff.scref(18452777,0,EineKleineScrefTable[18452777][0])	--(custom) 욕망과 욕망의 항아리
+RegEff.scref(35261759,0,EineKleineScrefTable[35261759][0])	--욕망과 탐욕의 항아리
+RegEff.scref(84211599,0,EineKleineScrefTable[84211599][0])	--졸부와 겸허의 항아리
+
+--Delightsworn utilities
+local DelightswornScrefFunc <const> = function(e,c)
+	local con=e:GetCondition()
+	e:SetCondition(function(e,tp,eg,ep,ev,re,r,rp)
+		local rc=re:GetHandler()
+		if rc.delightsworn then
+			return true
+		end
+		return con(e,tp,eg,ep,ev,re,r,rp)
+	end)
+	return e
+end
+local DelightswornScrefTable <const> = {
+	[52038441] = {[0]=function(e,c)
+		local filter1=function(c)
+			return c:IsFaceup() and c.delightsworn
+		end
+		local filter2=function(c,g)
+			return (g:IsContains(c) and c:IsLocation(LOCATION_MZONE)) or c.delightsworn
+		end
+		e:SetTarget(function(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+			local g=eg:Filter(c52038441.cfilter,nil,tp)
+			local sg=Duel.GetMatchingGroup(filter1,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil)
+			g:Merge(sg)
+			if chkc then return chkc:IsOnField() and filter2(chkc,g) end
+			if chk==0 then return Duel.IsExistingTarget(filter2,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil,g) end
+			if g:GetCount()==1 then
+				Duel.SetTargetCard(g)
+			else
+				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
+				Duel.SelectTarget(tp,filter2,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil,g)
+			end
+		end)
+		local e1=e:Clone()
+		e1:SetType(EFFECT_TYPE_QUICK_O)
+		e1:SetCode(EVENT_CHAINING)
+		e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
+		e1:SetCondition(function(e,tp,eg,ep,ev,re,r,rp)
+			local rc=re:GetHandler()
+			return rc.delightsworn
+		end)
+		cregeff(c,e1)
+		return {e,e1}
+	end},
+	[24508238] = {[0]=function(e,c)
+		local filter=function(c,tp)
+			return c:IsAbleToRemove() and ((c:IsLocation(LOCATION_GRAVE) and c:IsControler(1-tp)) or (c:IsFaceup() and c.delightsworn))
+		end
+		e:SetTarget(function(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+			if chkc then return chkc:IsLocation(LOCATION_ONFIELD+LOCATION_GRAVE) and filter(chkc,tp) end
+			if chk==0 then return Duel.IsExistingTarget(filter,tp,LOCATION_ONFIELD,LOCATION_GRAVE+LOCATION_ONFIELD,1,nil,tp) end
+			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
+			local g=Duel.SelectTarget(tp,filter,tp,LOCATION_ONFIELD,LOCATION_GRAVE+LOCATION_ONFIELD,1,1,nil,tp)
+			Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,0,0)
+		end)
+	end},
+	[97268402] = {[0]=function(e,c)
+		local filter=function(c,tp)
+			return c:IsFaceup()
+				and ((not c:IsDisabled() and c:IsType(TYPE_EFFECT) and c:IsControler(1-tp) and c:IsLocation(LOCATION_MZONE))
+					or c.delightsworn)
+		end
+		e:SetTarget(function(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+			if chkc then return chkc:IsLocation(LOCATION_ONFIELD) and filter(chkc,tp) end
+			if chk==0 then return Duel.IsExistingTarget(filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil,tp) end
+			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
+			local g=Duel.SelectTarget(tp,filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil,tp)
+			Duel.SetOperationInfo(0,CATEGORY_DISABLE,g,1,0,0)
+		end)
+	end},
+	[18452762] = {[0]=function(e,c)
+		local filter=function(c,tp)
+			return c:IsFaceup()
+				and ((aux.disfilter1(c) and c:IsControler(1-tp) and c:IsType(TYPE_SPELL+TYPE_TRAP))
+					or c.delightsworn)
+		end
+		e:SetTarget(function(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+			if chkc then return chkc:IsLocation(LOCATION_ONFIELD) and filter(chkc,tp) end
+			if chk==0 then return Duel.IsExistingTarget(filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil,tp) end
+			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
+			local g=Duel.SelectTarget(tp,filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil,tp)
+			Duel.SetOperationInfo(0,CATEGORY_DISABLE,g,1,0,0)
+		end)
+	end},
+	[112603120] = {
+		[0] = function(e,c)
+			local filter=function(c,tp)
+				return c:IsFaceup()
+					and ((not c:IsDisabled() and c:IsType(TYPE_EFFECT) and not c:IsCode(code)
+						and c:IsControler(1-tp)	and c:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED))
+						or c.delightsworn)
+			end
+			e:SetTarget(function(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+				if chkc then return chkc:IsLocation(LOCATION_ONFIELD+LOCATION_GRAVE+LOCATION_REMOVED) and filter(chkc,tp) end
+				if chk==0 then
+					return Duel.IsExistingTarget(filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD+LOCATION_GRAVE+LOCATION_REMOVED,1,nil,tp)
+				end
+				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
+				local g=Duel.SelectTarget(tp,filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD+LOCATION_GRAVE+LOCATION_REMOVED,1,1,nil,tp)
+				Duel.SetOperationInfo(0,CATEGORY_DISABLE,g,1,0,0)
+			end)
+		end,
+		[1] = function(e,c)
+			local filter=function(c,tp)
+				return c:IsFaceup()
+					and ((not c:IsDisabled() and not c:IsType(TYPE_NORMAL) and not c:IsCode(code)
+						and c:IsControler(1-tp)	and c:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED))
+						or c.delightsworn)
+			end
+			e:SetTarget(function(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+				if chkc then return chkc:IsLocation(LOCATION_ONFIELD+LOCATION_GRAVE+LOCATION_REMOVED) and filter(chkc,tp) end
+				if chk==0 then
+					return Duel.IsExistingTarget(filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD+LOCATION_GRAVE+LOCATION_REMOVED,1,nil,tp)
+				end
+				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
+				local g=Duel.SelectTarget(tp,filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD+LOCATION_GRAVE+LOCATION_REMOVED,1,1,nil,tp)
+				Duel.SetOperationInfo(0,CATEGORY_DISABLE,g,1,0,0)
+			end)
+		end
+	}
+}
+RegEff.scref(67750322,0,DelightswornScrefFunc)					--스컬 마이스터
+RegEff.scref(59438930,0,DelightswornScrefFunc)					--유령토끼
+RegEff.scref(38814750,1,DelightswornScrefFunc)					--PSY프레임기어 γ
+RegEff.scref(14558127,0,DelightswornScrefFunc)					--하루 우라라
+RegEff.scref(73642296,0,DelightswornScrefFunc)					--저택 와라시
+RegEff.scref(52038441,0,DelightswornScrefTable[52038441][0])		--사요 시구레
+RegEff.scref(99000133,0,DelightswornScrefFunc)					--(custom) 무녀 미코토
+RegEff.scref(32415008,1,DelightswornScrefFunc)					--(custom) I'm not D.D.crow!
+RegEff.scref(32415008,2,DelightswornScrefFunc)					--(custom) I'm not D.D.crow!
+RegEff.scref(24508238,0,DelightswornScrefTable[24508238][0])		--D.D. 크로우
+RegEff.scref(97268402,0,DelightswornScrefTable[97268402][0])		--이펙트 뵐러
+RegEff.scref(18452762,0,DelightswornScrefTable[18452762][0])		--(custom) 이펙트 세일러
+--RegEff.scref(18452813,0,nil)									--이펙트 스퀘어러
+RegEff.scref(112603120,0,DelightswornScrefTable[112603120][0])	--(custom) 와타시베 크리스
+RegEff.scref(112603120,1,DelightswornScrefTable[112603120][1])	--(custom) 와타시베 크리스
+if YGOPRO_VERSION~="Percy/EDO" then
+	--temp
+	RegEff.scref(10045474,0,function(e,c)						--무한포영
+		local filter=function(c,tp)
+			return c:IsFaceup()
+				and ((aux.disfilter1(c) and c:IsControler(1-tp) and c:IsLocation(LOCATION_MZONE))
+					or c.delightsworn)
+		end
+		e:SetTarget(function(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+			if chkc then return chkc:IsLocation(LOCATION_ONFIELD) and filter(chkc,tp) end
+			if chk==0 then return Duel.IsExistingTarget(filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil,tp) end
+			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
+			local g=Duel.SelectTarget(tp,filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil,tp)
+		end)
+	end)
+end
+
+--Time Capsule utilities
+RegEff.scref(CARD_TIME_CAPSULE,0,function(e,c)	--타임 캡슐
+	e:SetOperation(function(e,tp,eg,ep,ev,re,r,rp)
+		local c=e:GetHandler()
+		if c:IsRelateToEffect(e) and not c:IsStatus(STATUS_LEAVE_CONFIRMED) then
+			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
+			local g=Duel.SelectMatchingCard(tp,Card.IsAbleToRemove,tp,LOCATION_DECK,0,1,1,nil,tp,POS_FACEDOWN)
+			local tc=g:GetFirst()
+			if tc and Duel.Remove(tc,POS_FACEDOWN,REASON_EFFECT)~=0 and e:IsHasType(EFFECT_TYPE_ACTIVATE) then
+				tc:RegisterFlagEffect(CARD_TIME_CAPSULE,RESET_EVENT+RESETS_STANDARD,0,1)
+				local e1=Effect.CreateEffect(c)
+				e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+				e1:SetRange(LOCATION_SZONE)
+				e1:SetCode(EVENT_PHASE+PHASE_STANDBY)
+				e1:SetCountLimit(1)
+				e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_STANDBY+RESET_SELF_TURN,2)
+				e1:SetCondition(mt.thcon)
+				e1:SetOperation(mt.thop)
+				e1:SetLabel(0)
+				e1:SetLabelObject(tc)
+				c:RegisterEffect(e1)
+				local e2=Effect.CreateEffect(c)
+				e2:SetType(EFFECT_TYPE_SINGLE)
+				e2:SetCode(EFFECT_TIME_CAPSULE)
+				e2:SetRange(LOCATION_SZONE)
+				e2:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_STANDBY+RESET_SELF_TURN,2)
+				e2:SetLabelObject(tc)
+				c:RegisterEffect(e2)
+			else
+				c:CancelToGrave(false)
+			end
+		end
+	end)
+	return e
+end)
+
+--Alice Scarlet utilities
+local dschlim=Duel.SetChainLimit
+function Duel.SetChainLimit(f)
+	dschlim(function(e,ep,tp)
+		if Duel.IsPlayerAffectedByEffect(tp,EFFECT_ALICE_SCARLET) then
+			return true
+		end
+		return f(e,ep,tp)
+	end)
+end
+local dschlimtce=Duel.SetChainLimitTillChainEnd
+function Duel.SetChainLimitTillChainEnd(f)
+	dschlimtce(function(e,ep,tp)
+		if Duel.IsPlayerAffectedByEffect(tp,EFFECT_ALICE_SCARLET) then
+			return true
+		end
+		return f(e,ep,tp)
+	end)
+end
+RegEff.sgref(function(e,c)
+	if e:IsHasType(EFFECT_TYPE_ACTIONS) then
+		local op=e:GetOperation()
+		if op then
+			e:SetOperation(function(e,tp,eg,ep,ev,re,r,rp)
+				if Duel.IsPlayerAffectedByEffect(tp,EFFECT_ALICE_SCARLET) then
+					return
+				end
+				if op then
+					op(e,tp,eg,ep,ev,re,r,rp)
+				end
+			end)
+		end
+	else
+		local con=e:GetCondition()
+		e:SetCondition(function(e,...)
+			local tp=e:GetHandlerPlayer()
+			if Duel.IsPlayerAffectedByEffect(tp,EFFECT_ALICE_SCARLET) then
+				return false
+			end
+			return not con or con(e,...)
+		end)
+	end
+end)
+RegEff.sdref(function(e,p)
+	if e:IsHasProperty(EFFECT_FLAG_INITIAL) then
+		if e:IsHasType(EFFECT_TYPE_ACTIONS) then
+			local op=e:GetOperation()
+			e:SetOperation(function(e,tp,eg,ep,ev,re,r,rp)
+				if Duel.IsPlayerAffectedByEffect(tp,EFFECT_ALICE_SCARLET) then
+					return
+				end
+				if op then
+					op(e,tp,eg,ep,ev,re,r,rp)
+				end
+			end)
+		else
+			local con=e:GetCondition()
+			e:SetCondition(function(e,...)
+				local tp=e:GetHandlerPlayer()
+				if Duel.IsPlayerAffectedByEffect(tp,EFFECT_ALICE_SCARLET) then
+					return false
+				end
+				return not con or con(e,...)
+			end)
+		end
+	end
+end)
+
+--Delayed If utility
+RegEff.sgref(function(e,c)
+	if e:IsHasType(EFFECT_TYPE_TRIGGER_O) and e:IsHasProperty(EFFECT_FLAG_DELAY) then
+		local con=e:GetCondition()
+		e:SetCondition(function(e,tp,eg,ep,ev,re,r,rp)
+			if c18453397 then
+				table.insert(c18453397[0],e)
+			end
+			return not con or con(e,tp,eg,ep,ev,re,r,rp)
+		end)
+	end
+	return e
+end)
+
+--ThePhantom utilities
+RegEff.sgref(function(e1,c)
+	if not e1:IsHasType(0x7e0) then return e1 end
+	--
+	local cl,clm,cc,cf,chi=e1:GetCountLimit()
+	local con=e1:GetCondition()
+	e1:SetCondition(function(e,tp,eg,ep,ev,re,r,rp)
+		local c=e:GetHandler()
+		local eset={c:IsHasEffect(EFFECT_THE_PHANTOM)}
+		if e:IsHasType(EFFECT_TYPE_TRIGGER_O+EFFECT_TYPE_TRIGGER_F) then
+			if #eset==0 or ep==c:GetControler() or not c:IsLocation(LOCATION_MZONE) then
+				return false
+			end
+		else
+			if #eset==0 or tp==c:GetControler() or not c:IsLocation(LOCATION_MZONE) then
+				return false
+			end
+		end
+		return not con or con(e,tp,eg,ep,ev,re,r,rp)
+	end)
+	if cf==(EFFECT_COUNT_CODE_SINGLE>>28) then
+		e1:SetCountLimit(999999999)
+		local cost=e1:GetCost()
+		e1:SetCost(function(e,tp,eg,ep,ev,re,r,rp,chk)
+			local c=e:GetHandler()
+			local fid=c:GetFieldID()
+			local ct=0
+			local eset={c:GetFlagEffectLabel(EFFECT_THE_PHANTOM)}
+			for _,te in pairs(eset) do
+				if te==fid then
+					ct=ct+1
+				end
+			end
+			if chk==0 then
+				return (not cost or cost(e,tp,eg,ep,ev,re,r,rp,chk)) and ct<cl
+			end
+			c:RegisterFlagEffect(EFFECT_THE_PHANTOM,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1,fid)
+			if cost then
+				cost(e,tp,eg,ep,ev,re,r,rp,chk)
+			end
+		end)
+	end
+	--return
+	if e1:IsHasType(EFFECT_TYPE_TRIGGER_O+EFFECT_TYPE_TRIGGER_F) then
+		local prop=e1:GetProperty()
+		e1:SetProperty(EFFECT_FLAG_EVENT_PLAYER|prop)
+		local ecode=e1:GetCode()
+		e1:SetCode(0x10000000|ecode)
+		local con=e1:GetCondition()
+		e1:SetCondition(function(e,tp,eg,ep,ev,re,r,rp)
+			local nep,nrp=rp>>16,rp&0xffff
+			return not con or con(e,tp,eg,nep,ev,re,r,nrp)
+		end)
+		local cost=e1:GetCost()
+		e1:SetCost(function(e,tp,eg,ep,ev,re,r,rp,chk)
+			local nep,nrp=rp>>16,rp&0xffff
+			return not cost or cost(e,tp,eg,nep,ev,re,r,nrp,chk)
+		end)
+		local tg=e1:GetTarget()
+		e1:SetTarget(function(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+			local nep,nrp=rp>>16,rp&0xffff
+			return not tg or tg(e,tp,eg,nep,ev,re,r,nrp,chk,chkc)
+		end)
+		local op=e1:GetOperation()
+		e1:SetOperation(function(e,tp,eg,ep,ev,re,r,rp)
+			local nep,nrp=rp>>16,rp&0xffff
+			return not op or op(e,tp,eg,nep,ev,re,r,nrp)
+		end)
+		local e2=Effect.CreateEffect(c)
+		local sf=e:GetType()&(EFFECT_TYPE_SINGLE|EFFECT_TYPE_FIELD)
+		e2:SetType(EFFECT_TYPE_CONTINUOUS|sf)
+		e2:SetCode(ecode)
+		e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
+		e2:SetOperation(function(e,tp,eg,ep,ev,re,r,rp)
+			local c=e:GetHandler()
+			if sf&EFFECT_TYPE_SINGLE>0 then
+				Duel.RaiseSingleEvent(c,0x10000000|ecode,re,r,rp|(ep<<16),1-c:GetControler(),ev)
+			end
+			if sf&EFFECT_TYPE_FIELD>0 then
+				Duel.RaiseEvent(eg,0x10000000|ecode,re,r,rp|(ep<<16),1-c:GetControler(),ev)
+			end
+		end)
+		return {e1,e2}
+	else
+		local prop=e1:GetProperty()
+		e1:SetProperty(EFFECT_FLAG_BOTH_SIDE|prop)
+		return e1
+	end
+end)
