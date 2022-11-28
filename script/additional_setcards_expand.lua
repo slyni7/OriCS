@@ -1,3 +1,11 @@
+data_desc={}
+function data_manager_desc(desc,chk)
+   if data_desc[desc] then
+      return data_desc[desc]
+   end
+   return false
+end
+
 function data_manager_setname(code,index)
 	if data_setname[code] then
 		if not index then
