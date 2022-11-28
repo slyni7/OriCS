@@ -1,22 +1,3 @@
-CYAN_EFFECT_AGRAVAIN=111210018
-local slv=Card.GetSynchroLevel
-function Card.GetSynchroLevel(c,sc)
-	if c:IsHasEffect(CYAN_EFFECT_AGRAVAIN) then
-		local m=_G["c"..c:GetCode()]
-		if m.CyanSynCon(sc) then
-			return m.CyanSynLevel
-		end
-	end
-	return slv(c,sc)
-end
-
-local csm=Card.IsCanBeSynchroMaterial
-function Card.IsCanBeSynchroMaterial(c,sc)
-	if c:IsHasEffect(CYAN_EFFECT_AGRAVAIN) then
-		return true
-	end
-	return csm(c,sc)
-end
 function Auxiliary.AddSynchroProcedure(c,f1,f2,minc,maxc,a,b)
 	if type(f2)=="number" then
 		if f2==minc then

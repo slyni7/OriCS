@@ -1,24 +1,34 @@
-dofile("expansions/convert-from-core.lua")
+--[[
+KoishiPro :
+dofile("expansions/init.lua") >> dofile("expansions/script/OriCS_init.lua")
+
+EDOPro :
+Duel.LoadScript("OriCS_init.lua") >> pcall(dofile,"expansions/init.lua")
+--]]
+
+--version check
+if not YGOPRO_VERSION then
+	if EFFECT_FUSION_MAT_RESTRICTION then YGOPRO_VERSION="Percy/EDO"
+	elseif EFFECT_CHANGE_LINK_MARKER_KOISHI then YGOPRO_VERSION="Koishi"
+	else YGOPRO_VERSION="Core" end
+	--Debug.Message("init says: Current Version is "..YGOPRO_VERSION)
+end
+
+--init
+function initScript(s)
+	local orics = string.gsub(s, "expansions/", "repositories/OriCS/")
+	local corona = string.gsub(s, "expansions/", "repositories/CP19/")
+	local _ = pcall(dofile,orics) or pcall(dofile,corona) or pcall(dofile,s)
+end
+initScript("expansions/convert-from-core/from_core.lua")
+
+--dependencies
 if IREDO_COMES_TRUE then
-	function Auxiliary.Stringid(code,id)
-		return code*16+id
-	end
-	Duel.IsDuelType=aux.FALSE
-	function Card.CanAttack(c)
-		return c:IsAttackable()
-	end
-	function Card.IsSummonCode(c,sc,sumtype,sp,code)
-		if sumtype&SUMMON_TYPE_FUSION==SUMMON_TYPE_FUSION then
-			return c:IsFusionCode(code)
-		end
-		return c:IsCode(code)
-	end
-	Card.IsGeminiState=Card.IsDualState
-	EFFECT_ADD_FUSION_CODE=340
+	EFFECT_ADD_FUSION_CODE	=340
 	EFFECT_QP_ACT_IN_SET_TURN=359
-	EFFECT_COUNT_CODE_OATH   = 0x10000000
-	EFFECT_COUNT_CODE_DUEL   = 0x20000000
-	EFFECT_COUNT_CODE_SINGLE = 0x1
+	EFFECT_COUNT_CODE_OATH	=0x10000000
+	EFFECT_COUNT_CODE_DUEL	=0x20000000
+	EFFECT_COUNT_CODE_SINGLE=0x1
 	OPCODE_ADD				=0x40000000
 	OPCODE_SUB				=0x40000001
 	OPCODE_MUL				=0x40000002
@@ -32,16 +42,34 @@ if IREDO_COMES_TRUE then
 	OPCODE_ISTYPE			=0x40000102
 	OPCODE_ISRACE			=0x40000103
 	OPCODE_ISATTRIBUTE		=0x40000104
+	Auxiliary.Stringid=function(code,id)
+		return code*16+id
+	end
+	Card.CanAttack=function(c)
+		return c:IsAttackable()
+	end
+	Card.IsSummonCode=function(c,sc,sumtype,sp,code)
+		if sumtype&SUMMON_TYPE_FUSION==SUMMON_TYPE_FUSION then
+			return c:IsFusionCode(code)
+		end
+		return c:IsCode(code)
+	end
+	Card.IsGeminiState=Card.IsDualState
+	Duel.IsDuelType=aux.FALSE
+	OriCS_initialized=true
 else
-	EFFECT_COUNT_CODE_OATH   = 0x10000000
-	EFFECT_COUNT_CODE_DUEL   = 0x20000000
-	EFFECT_COUNT_CODE_SINGLE = 0x40000000
+	EFFECT_COUNT_CODE_OATH	=0x10000000
+	EFFECT_COUNT_CODE_DUEL	=0x20000000
+	EFFECT_COUNT_CODE_SINGLE=0x40000000
 	SUMMON_TYPE_ADVANCE=SUMMON_TYPE_TRIBUTE
-	dofile("expansions/script/init.lua")
+	if not OriCS_initialized then
+		OriCS_initialized=true
+		initScript("expansions/script/OriCS_init.lua")
+	end
 end
 
-local ct=Duel.GetFieldGroupCount(1,LOCATION_DECK,0)
-if ct==0 and Duel.IsDuelType(DUEL_ATTACK_FIRST_TURN) then
+--Hand Test
+if Duel.GetFieldGroupCount(1,LOCATION_DECK,0)==0 and Duel.IsDuelType(DUEL_ATTACK_FIRST_TURN) then
 	local f=io.open("deck/handtest.ydk","r")
 	if f==nil then
 		return

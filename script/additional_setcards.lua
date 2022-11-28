@@ -1,16 +1,15 @@
 Auxiliary.AdditionalSetcardsList={
+--LV
+[0x41]={55416843},
 --마도
 [0x6e]={47222536,85551711,23220863,71650854,48048590,51828629},
 --사이버
 [0x93]={99733359},
 --마술사
-[0x98]={21051146,31560081,40737112,41175645},
---LV
-[0x41]={55416843},
+[0x98]={21051146,40737112,41175645},
 --티아라
 [0x2c4]={37164373},
 }
-pcall(dofile,"expansions/expand.lua")
 local cisc=Card.IsSetCard
 function Card.IsSetCard(c,set,...)
 	if Auxiliary.AdditionalSetcardsList[set]

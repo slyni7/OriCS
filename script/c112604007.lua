@@ -58,7 +58,7 @@ end
 --DJ Beyond Festival
 function cm.djop(e,tp,eg,ep,ev,re,r,rp)
 	local p=Duel.GetTurnPlayer()
-	local val=1+math.floor(math.random()*3)
+	local val=Duel.GetRandomNumber(1,4)
 	if val==1 then
 		local token=Duel.CreateToken(p,112700062)
 			Duel.SpecialSummon(token,0,tp,tp,false,false,POS_FACEUP)
@@ -66,15 +66,14 @@ function cm.djop(e,tp,eg,ep,ev,re,r,rp)
 	elseif val==2 then
 		local token=Duel.CreateToken(p,112700066)
 			Duel.SpecialSummon(token,0,tp,tp,false,false,POS_FACEUP)
-			Duel.ConfirmCards(1-p,token)	
+			Duel.ConfirmCards(1-p,token)
 	elseif val==3 then
 		local token=Duel.CreateToken(p,112700064)
 			Duel.SpecialSummon(token,0,tp,tp,false,false,POS_FACEUP)
-			Duel.ConfirmCards(1-p,token)		
-	elseif val==4 then
+			Duel.ConfirmCards(1-p,token)
+	else
 		local token=Duel.CreateToken(p,112603339)
 			Duel.SpecialSummon(token,0,tp,tp,false,false,POS_FACEUP)
-			Duel.ConfirmCards(1-p,token)				
-	else
+			Duel.ConfirmCards(1-p,token)
 	end
 end
