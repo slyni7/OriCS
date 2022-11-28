@@ -72,7 +72,7 @@ RegEff.scref(96457619,1,function(e,c)
 	e:SetTarget(function(e,c)
 		return c:IsType(TYPE_XYZ) and c:GetOverlayCount()~=0
 	end)
-)
+end)
 
 --이 턴에 발동된
 function YuL.SetActivateTurn()

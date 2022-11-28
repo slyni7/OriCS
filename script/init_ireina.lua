@@ -1659,7 +1659,7 @@ function Auxiliary.EnableReverseDualAttribute(c)
 	e3:SetValue(TYPE_EFFECT)
 	c:RegisterEffect(e3)
 end
-local Auxiliary.GeminiStarScrefFunc = function(e,c)
+local GeminiStarScrefFunc = function(e,c)
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_EQUIP)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)

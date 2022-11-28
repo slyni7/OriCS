@@ -52,22 +52,22 @@ function RegEff.SetCardRegisterEffectFunction(code,f,manage_return,...)
 	else
 		if not cREFTable[code] then
 			cREFTable[code] = {}
-			cREFTable[0] = function(e,c)
+			cREFTable[code][0] = function(e,c)
 				if not c:IsOriginalCode(code) then return nil end
 				return f(e,c,table.unpack(params))	--Effect|table|nil f(e,c,...)
 			end
 		else
-			local fz = cREFTable[0]
-			cREFTable[0] = function(e,c)
+			local fz = cREFTable[code][0]
+			cREFTable[code][0] = function(e,c)
 				local e_or_t = fz(e,c)
 				if not e_or_t then return nil end
 				return f(e_or_t,c,table.unpack(params))	--Effect|table|nil f(e,c,...)
 			end
 		end
 		if manage_return then
-			cREFTable[1] = manage_return			--int f(t)
+			cREFTable[code][1] = manage_return			--int f(t)
 		else
-			if not cREFTable[1] then cREFTable[1] = SumReturns end
+			if not cREFTable[code][1] then cREFTable[code][1] = SumReturns end
 		end
 	end
 end

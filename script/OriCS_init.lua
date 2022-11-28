@@ -19,7 +19,7 @@ if not YGOPRO_VERSION then
 end
 
 --dependencies
-if YGOPRO_VERSION~="Percy/EDO" then
+if YGOPRO_VERSION=="Percy/EDO" then
 	Auxiliary.FilterFaceupFunction=function(f,...)
 		local params={...}
 		return 	function(target)
@@ -30,11 +30,11 @@ else --Koishi/Core
 	Duel.LoadScript = function(s,forced)
 		local orics = "repositories/OriCS/script/" .. s
 		local corona = "repositories/CP19/script/" .. s
-		local exp = "expansions/script/" .. s
+		local ex = "expansions/script/" .. s
 		--편집자 주: 차후 forced에 관한 수정 필요
-		if not pcall(dofile(orics)) then
-			if not pcall(dofile(corona)) then
-				pcall(dofile(exp))
+		if not pcall(dofile,orics) then
+			if not pcall(dofile,corona) then
+				pcall(dofile,ex)
 			end
 		end
 	end
