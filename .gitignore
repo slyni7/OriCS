@@ -1,3 +1,5 @@
 photothumb.db
 sqlite*.exe
 *.db3
+
+*desc.lua

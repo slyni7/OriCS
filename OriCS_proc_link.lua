@@ -5,6 +5,7 @@ end
 if not Link then
 	Link = aux.LinkProcedure
 end
+
 --Link Summon
 function Link.AddProcedure(c,f,min,max,specialchk,desc)
 	local e1=Effect.CreateEffect(c)
@@ -32,7 +33,6 @@ function Link.GetLinkCount(c)
 		return 1+0x10000*c:GetLink()
 	else return 1 end
 end
-
 function Link.CheckRecursive(c,tp,sg,mg,lc,minc,maxc,f,specialchk,og,emt,filt)
 	local g2=mg:Filter(Card.IsHasEffect,nil,73941492+TYPE_LINK)
 	if #g2>0 then

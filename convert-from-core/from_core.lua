@@ -1,0 +1,16 @@
+initScript("expansions/OriCS_proc_fusion.lua")
+initScript("expansions/OriCS_proc_link.lua")
+initScript("expansions/OriCS_proc_ritual.lua")
+initScript("expansions/OriCS_proc_synchro.lua")
+initScript("expansions/OriCS_proc_xyz.lua")
+initScript("expansions/convert-from-core/core_constant.lua")
+initScript("expansions/convert-from-core/core_proc_fusion.lua")
+initScript("expansions/convert-from-core/core_proc_link.lua")
+initScript("expansions/convert-from-core/core_proc_pendulum.lua")
+if IREDO_COMES_TRUE==nil then
+	initScript("expansions/convert-from-core/core_proc_procs.lua")
+end
+initScript("expansions/convert-from-core/core_proc_ritual.lua")
+initScript("expansions/convert-from-core/core_proc_synchro.lua")
+initScript("expansions/convert-from-core/core_proc_xyz.lua")
+initScript("expansions/convert-from-core/core_utility.lua")

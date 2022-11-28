@@ -7,7 +7,9 @@ if not Fusion then
 end
 
 EFFECT_MULTIPLE_FUSION_MATERIAL=18452701
-GlobalMultipleFusionTable={}
+GlobalMultipleFusionTable	={}
+GlobalMultipleFusionTokens	={[0]={},[1]={}}
+
 function Auxiliary.MultipleFusionMaterial(c,fc)
 	local fe={c:IsHasEffect(EFFECT_MULTIPLE_FUSION_MATERIAL)}
 	local res=1
@@ -26,9 +28,6 @@ function Auxiliary.MultipleFusionMaterial(c,fc)
 	return res
 end
 
-GlobalMultipleFusionTokens={}
-GlobalMultipleFusionTokens[0]={}
-GlobalMultipleFusionTokens[1]={}
 function Auxiliary.MultipleFusionTokensOperation(e,tp,eg,ep,ev,re,r,rp)
 	for i=1,64 do
 		local token=Duel.CreateToken(0,46448938)
@@ -334,6 +333,7 @@ function Fusion.CheckMix(c,mg,sg,fc,sub,sub2,contact,sumtype,tp,fun1,fun2,...)
 		return fun1(c,fc,sub,sub2,mg,sg,tp,contact,sumtype)
 	end
 end
+
 Fusion.CheckExact=nil
 Fusion.CheckMin=nil
 Fusion.CheckMax=nil
@@ -395,6 +395,7 @@ function Fusion.SelectMix(c,tp,mg,sg,mustg,fc,sub,sub2,contact,sumtype,chkf,...)
 	-- mg2:Merge(rg)
 	return res
 end
+
 --Fusion monster, mixed material * minc to maxc + material + ...
 function Fusion.AddProcMixRep(c,sub,insf,fun1,minc,maxc,...)
 	if c:IsStatus(STATUS_COPYING_EFFECT) then return end

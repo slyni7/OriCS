@@ -6,6 +6,13 @@ EDOPro :
 Duel.LoadScript("OriCS_init.lua") >> pcall(dofile,"expansions/init.lua")
 --]]
 
+--version check
+if not YGOPRO_VERSION then
+	if EFFECT_FUSION_MAT_RESTRICTION then YGOPRO_VERSION="Percy/EDO"
+	elseif EFFECT_CHANGE_LINK_MARKER_KOISHI then YGOPRO_VERSION="Koishi"
+	else YGOPRO_VERSION="Core" end
+end
+
 function initScript(s)
 	local orics = string.gsub(s, "expansions/", "repositories/OriCS/")
 	local corona = string.gsub(s, "expansions/", "repositories/CP19/")
@@ -15,15 +22,15 @@ function initScript(s)
 		end
 	end
 end
+initScript("expansions/convert-from-core/from_core.lua")
 
-initScript("expansions/convert-from-core.lua")
-
+--dependencies
 if IREDO_COMES_TRUE then
-	EFFECT_ADD_FUSION_CODE=340
+	EFFECT_ADD_FUSION_CODE	=340
 	EFFECT_QP_ACT_IN_SET_TURN=359
-	EFFECT_COUNT_CODE_OATH   = 0x10000000
-	EFFECT_COUNT_CODE_DUEL   = 0x20000000
-	EFFECT_COUNT_CODE_SINGLE = 0x1
+	EFFECT_COUNT_CODE_OATH	=0x10000000
+	EFFECT_COUNT_CODE_DUEL	=0x20000000
+	EFFECT_COUNT_CODE_SINGLE=0x1
 	OPCODE_ADD				=0x40000000
 	OPCODE_SUB				=0x40000001
 	OPCODE_MUL				=0x40000002
@@ -53,9 +60,9 @@ if IREDO_COMES_TRUE then
 	Duel.IsDuelType=aux.FALSE
 	OriCS_init=true
 else
-	EFFECT_COUNT_CODE_OATH   = 0x10000000
-	EFFECT_COUNT_CODE_DUEL   = 0x20000000
-	EFFECT_COUNT_CODE_SINGLE = 0x40000000
+	EFFECT_COUNT_CODE_OATH	=0x10000000
+	EFFECT_COUNT_CODE_DUEL	=0x20000000
+	EFFECT_COUNT_CODE_SINGLE=0x40000000
 	SUMMON_TYPE_ADVANCE=SUMMON_TYPE_TRIBUTE
 	if not OriCS_init then
 		OriCS_init=true
@@ -63,6 +70,7 @@ else
 	end
 end
 
+--Hand Test
 if Duel.GetFieldGroupCount(1,LOCATION_DECK,0)==0 and Duel.IsDuelType(DUEL_ATTACK_FIRST_TURN) then
 	local f=io.open("deck/handtest.ydk","r")
 	if f==nil then

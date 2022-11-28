@@ -180,9 +180,7 @@ end
 Duel.LoadScript("_register_effect.lua");
 Duel.LoadScript("AuxCard_CustomType.lua")
 if YGOPRO_VERSION~="Koishi" then
-	Duel.LoadScript("koishi_proc_fusion.lua")
-	Duel.LoadScript("koishi_proc_synchro.lua")
-	Duel.LoadScript("koishi_proc_xyz.lua")
+	Duel.LoadScript("koishi\\from_koishi.lua")
 end
 Duel.LoadScript("proc_equation.lua")
 Duel.LoadScript("proc_order.lua")
