@@ -11,16 +11,14 @@ if not YGOPRO_VERSION then
 	if EFFECT_FUSION_MAT_RESTRICTION then YGOPRO_VERSION="Percy/EDO"
 	elseif EFFECT_CHANGE_LINK_MARKER_KOISHI then YGOPRO_VERSION="Koishi"
 	else YGOPRO_VERSION="Core" end
+	--Debug.Message("init says: Current Version is "..YGOPRO_VERSION)
 end
 
+--init
 function initScript(s)
 	local orics = string.gsub(s, "expansions/", "repositories/OriCS/")
 	local corona = string.gsub(s, "expansions/", "repositories/CP19/")
-	if not pcall(dofile(orics)) then
-		if not pcall(dofile(corona)) then
-			pcall(dofile(s))
-		end
-	end
+	local _ = pcall(dofile,orics) or pcall(dofile,corona) or pcall(dofile,s)
 end
 initScript("expansions/convert-from-core/from_core.lua")
 
@@ -58,15 +56,15 @@ if IREDO_COMES_TRUE then
 	end
 	Card.IsGeminiState=Card.IsDualState
 	Duel.IsDuelType=aux.FALSE
-	OriCS_init=true
+	OriCS_initialized=true
 else
 	EFFECT_COUNT_CODE_OATH	=0x10000000
 	EFFECT_COUNT_CODE_DUEL	=0x20000000
 	EFFECT_COUNT_CODE_SINGLE=0x40000000
 	SUMMON_TYPE_ADVANCE=SUMMON_TYPE_TRIBUTE
-	if not OriCS_init then
-		OriCS_init=true
-		if not pcall(dofile,"repositories/OriCS/script/OriCS_init.lua") then pcall(dofile,"expansions/script/OriCS_init.lua") end
+	if not OriCS_initialized then
+		OriCS_initialized=true
+		initScript("expansions/script/OriCS_init.lua")
 	end
 end
 

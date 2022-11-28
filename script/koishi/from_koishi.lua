@@ -7,6 +7,3 @@ Duel.LoadScript("koishi_proc_fusion.lua")
 Duel.LoadScript("koishi_proc_synchro.lua")
 Duel.LoadScript("koishi_proc_xyz.lua")
 Auxiliary = core_aux
-
-Debug.Message("Koishi Scripts succesfully loaded!")
-Debug.Message("Use Koishi.function() instead of aux.function()!")

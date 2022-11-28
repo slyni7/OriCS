@@ -6,16 +6,18 @@ EDOPro :
 Duel.LoadScript("OriCS_init.lua") >> pcall(dofile,"expansions/init.lua")
 --]]
 
-if not OriCS_init then
-	OriCS_init=true
-	if not pcall(dofile,"repositories/OriCS/init.lua") then pcall(dofile,"expansions/init.lua") end
-end
-
 --version check
 if not YGOPRO_VERSION then
 	if EFFECT_FUSION_MAT_RESTRICTION then YGOPRO_VERSION="Percy/EDO"
 	elseif EFFECT_CHANGE_LINK_MARKER_KOISHI then YGOPRO_VERSION="Koishi"
 	else YGOPRO_VERSION="Core" end
+	--Debug.Message("OriCS_init says: Current Version is "..YGOPRO_VERSION)
+end
+
+--init
+if not OriCS_initialized then
+	OriCS_initialized=true
+	local _ = pcall(dofile,"repositories/OriCS/init.lua") or pcall(dofile,"expansions/init.lua")
 end
 
 --dependencies
@@ -180,7 +182,7 @@ end
 Duel.LoadScript("_register_effect.lua");
 Duel.LoadScript("AuxCard_CustomType.lua")
 if YGOPRO_VERSION~="Koishi" then
-	Duel.LoadScript("koishi\\from_koishi.lua")
+	--Duel.LoadScript("koishi\\from_koishi.lua")
 end
 Duel.LoadScript("proc_equation.lua")
 Duel.LoadScript("proc_order.lua")
