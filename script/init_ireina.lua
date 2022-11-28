@@ -1563,7 +1563,7 @@ function Auxiliary.OldGodCost2(e,tp,eg,ep,ev,re,r,rp,chk)
 	end
 	c:RegisterFlagEffect(FLAG_EFFECT_OLDGOD,RESET_EVENT+0x1ec0000,0,0)
 end
-local OldGodScrefFunc1 <const> = function(e,c)
+local OldGodScrefFunc1 = function(e,c)
 	local code=c:GetOriginalCode()
 	local mt=_G["c"..code]
 	mt.oldgod_mzone=true
@@ -1576,7 +1576,7 @@ local OldGodScrefFunc1 <const> = function(e,c)
 	e1:SetOperation(e:GetOperation())
 	return {e,e1}
 end
-local OldGodScrefFunc2 <const> = function(e,c)
+local OldGodScrefFunc2 = function(e,c)
 	local code=c:GetOriginalCode()
 	local mt=_G["c"..code]
 	mt.oldgod_mzone=true
@@ -1659,7 +1659,7 @@ function Auxiliary.EnableReverseDualAttribute(c)
 	e3:SetValue(TYPE_EFFECT)
 	c:RegisterEffect(e3)
 end
-local Auxiliary.GeminiStarScrefFunc <const> = function(e,c)
+local Auxiliary.GeminiStarScrefFunc = function(e,c)
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_EQUIP)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -1714,7 +1714,7 @@ local GlobalEffect_Aroma2=GlobalEffect_Aroma1:Clone()
 GlobalEffect_Aroma2:SetCode(EVENT_RECOVER)
 Duel.RegisterEffect(GlobalEffect_Aroma2,0)
 
-local AromaScrefFunc <const> = function(e,c,amount)
+local AromaScrefFunc = function(e,c,amount)
 	e:SetOperation(function(e,tp,eg,ep,ev,re,r,rp)
 		local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
 		if not p or not d then
@@ -1729,7 +1729,7 @@ RegEff.scref(38199696,0,AromaScrefFunc,500)	--·¹µå Æ÷¼Ç
 RegEff.scref(20871001,0,AromaScrefFunc,400)	--ºí·ç Æ÷¼Ç
 
 --Eine Kleine utilities
-local EineKleineScrefTable <const> = {
+local EineKleineScrefTable = {
 	[18452777] = {[0]=function(e,c)
 		e:SetCost(function(e,tp,eg,ep,ev,re,r,rp,chk)
 			local g1=Duel.GMGroup(mt.cfil1,tp,"E",0,nil)
@@ -1910,7 +1910,7 @@ RegEff.scref(35261759,0,EineKleineScrefTable[35261759][0])	--¿å¸Á°ú Å½¿åÀÇ Ç×¾Æ¸
 RegEff.scref(84211599,0,EineKleineScrefTable[84211599][0])	--Á¹ºÎ¿Í °âÇãÀÇ Ç×¾Æ¸®
 
 --Delightsworn utilities
-local DelightswornScrefFunc <const> = function(e,c)
+local DelightswornScrefFunc = function(e,c)
 	local con=e:GetCondition()
 	e:SetCondition(function(e,tp,eg,ep,ev,re,r,rp)
 		local rc=re:GetHandler()
@@ -1921,7 +1921,7 @@ local DelightswornScrefFunc <const> = function(e,c)
 	end)
 	return e
 end
-local DelightswornScrefTable <const> = {
+local DelightswornScrefTable = {
 	[52038441] = {[0]=function(e,c)
 		local filter1=function(c)
 			return c:IsFaceup() and c.delightsworn

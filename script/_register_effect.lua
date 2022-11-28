@@ -8,7 +8,7 @@ if not RegEff then
 end
 
 --return 값은 하나면 충분하잖아?
-local SumReturns <const> = function(table_or_integer)
+local SumReturns = function(table_or_integer)
 	if type(table_or_integer)~="table" then return table_or_integer end
 	local res = 0
 	for k,i in ipairs(table_or_integer) do
@@ -17,7 +17,7 @@ local SumReturns <const> = function(table_or_integer)
 	end
 	return res
 end
-local BandReturns <const> = function(table_or_integer)
+local BandReturns = function(table_or_integer)
 	if type(table_or_integer)~="table" then return table_or_integer end
 	local res = -1
 	for k,i in ipairs(table_or_integer) do
@@ -26,7 +26,7 @@ local BandReturns <const> = function(table_or_integer)
 	end
 	return res
 end
-local BorReturns <const> = function(table_or_integer)
+local BorReturns = function(table_or_integer)
 	if type(table_or_integer)~="table" then return table_or_integer end
 	local res = 0
 	for k,i in ipairs(table_or_integer) do
@@ -37,8 +37,8 @@ local BorReturns <const> = function(table_or_integer)
 end
 
 --cregeff는 한 번이면 충분하잖아?
-local cREFTable <const> = {[0]={}} --RegisterEffectFunction table
-local cRegEff <const> = Card.RegisterEffect --int Card.RegisterEffect(Card c,Effect e[,bool forced=false,...])
+local cREFTable = {[0]={}} --RegisterEffectFunction table
+local cRegEff = Card.RegisterEffect --int Card.RegisterEffect(Card c,Effect e[,bool forced=false,...])
 function RegEff.SetCardRegisterEffectFunction(code,f,manage_return,...)
 	if type(code)~="number" or type(f)~="function" then return end
 	local params = {...}
@@ -128,8 +128,8 @@ Card.RegisterEffect = function(c,e,forced,...)
 end
 
 --dregeff는 한 번이면 충분하잖아?
-local dRegEff <const> = Duel.RegisterEffect --void Duel.RegisterEffect(Effect e, int player)
-local dREFTable <const> = {} --RegisterEffectFunction table
+local dRegEff = Duel.RegisterEffect --void Duel.RegisterEffect(Effect e, int player)
+local dREFTable = {} --RegisterEffectFunction table
 function RegEff.SetDuelRegisterEffectFunction(f)
 	--Effect f(e,p)
 	local ct=#dREFTable

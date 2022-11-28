@@ -204,7 +204,7 @@ end
 --]]
 
 --이하 효과 엎는거
-local cregeff <const> = {}
+local cregeff = {}
 
 --트라미드 마스터
 cregeff[32912040] = {
