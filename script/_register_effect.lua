@@ -100,12 +100,12 @@ Card.RegisterEffect = function(c,e,forced,...)
 		else
 			local tt = e_or_t
 			e_or_t = {}
-			for ,te in ipairs(tt) do
+			for _,te in ipairs(tt) do
 				local re_or_rt = f(te,c)
 				if type(re_or_rt)~="table" then
 					table.insert(e_or_t,re_or_rt or te)
 				else
-					for ,re in ipairs(re_or_rt) do table.insert(e_or_t,re) end
+					for _,re in ipairs(re_or_rt) do table.insert(e_or_t,re) end
 				end
 			end
 		end
