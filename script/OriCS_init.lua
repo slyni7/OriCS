@@ -179,7 +179,7 @@ end
 --OriCS utilities
 Duel.LoadScript("_register_effect.lua");
 Duel.LoadScript("AuxCard_CustomType.lua")
-if YGOPRO_VERSION~="Percy/EDO" then
+if YGOPRO_VERSION~="Koishi" then
 	Duel.LoadScript("koishi_proc_fusion.lua")
 	Duel.LoadScript("koishi_proc_synchro.lua")
 	Duel.LoadScript("koishi_proc_xyz.lua")
