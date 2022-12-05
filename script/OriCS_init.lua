@@ -181,9 +181,6 @@ end
 --OriCS utilities
 Duel.LoadScript("_register_effect.lua");
 Duel.LoadScript("AuxCard_CustomType.lua")
-if YGOPRO_VERSION~="Koishi" then
-	--Duel.LoadScript("koishi\\from_koishi.lua")
-end
 Duel.LoadScript("proc_equation.lua")
 Duel.LoadScript("proc_order.lua")
 Duel.LoadScript("proc_diffusion.lua")
