@@ -2181,10 +2181,11 @@ RegEff.sgref(function(e,c)
 end)
 
 --ThePhantom utilities
-RegEff.sgref(function(e1,c)
-	if not e1:IsHasType(0x7e0) then return e1 end
+RegEff.sgref(function(e,c)
+	if not e:IsHasType(0x7e0) then return e end
 	--
-	local cl,clm,cc,cf,chi=e1:GetCountLimit()
+	local cl,clm,cc,cf,chi=e:GetCountLimit()
+	local e1=e:Clone()
 	local con=e1:GetCondition()
 	e1:SetCondition(function(e,tp,eg,ep,ev,re,r,rp)
 		local c=e:GetHandler()
@@ -2249,7 +2250,7 @@ RegEff.sgref(function(e1,c)
 			return not op or op(e,tp,eg,nep,ev,re,r,nrp)
 		end)
 		local e2=Effect.CreateEffect(c)
-		local sf=e:GetType()&(EFFECT_TYPE_SINGLE|EFFECT_TYPE_FIELD)
+		local sf=e1:GetType()&(EFFECT_TYPE_SINGLE|EFFECT_TYPE_FIELD)
 		e2:SetType(EFFECT_TYPE_CONTINUOUS|sf)
 		e2:SetCode(ecode)
 		e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -2262,10 +2263,10 @@ RegEff.sgref(function(e1,c)
 				Duel.RaiseEvent(eg,0x10000000|ecode,re,r,rp|(ep<<16),1-c:GetControler(),ev)
 			end
 		end)
-		return {e1,e2}
+		return {e,e1,e2}
 	else
 		local prop=e1:GetProperty()
 		e1:SetProperty(EFFECT_FLAG_BOTH_SIDE|prop)
-		return e1
+		return {e,e1}
 	end
 end)
