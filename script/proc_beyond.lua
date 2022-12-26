@@ -1,8 +1,8 @@
-CUSTOMTYPE_BEYOND			=0x4
-REASON_BEYOND				=0x300
-SUMMON_TYPE_BEYOND			=0x4000c000
+CUSTOMTYPE_BEYOND=0x4
+REASON_BEYOND=0x300
+SUMMON_TYPE_BEYOND=0x4000c000
 
-EFFECT_MUST_BE_BMATERIAL	=112800000
+EFFECT_MUST_BE_BMATERIAL=112800000
 
 function Card.GetBYDLV(c,bool)
 	local mt=getmetatable(c)
@@ -321,9 +321,9 @@ function Auxiliary.BeyondCheckTable(beyt,crit,filts,bc,dir,...)
 					splitbv=math.max(splitbv,func(tc))
 				end
 			end
-			if dir==">" and splitbv>compbv then
+			if dir==">" and splitbv>=compbv then
 				sres=false
-			elseif dir=="<" and splitbv<compbv then
+			elseif dir=="<" and splitbv<=compbv then
 				sres=false
 			end
 			if not sres then
