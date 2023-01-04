@@ -1675,8 +1675,8 @@ RegEff.scref(99970320,0,GeminiStarScrefFunc)	--####
 --Charlotte overrides
 EFFECT_EXTRA_RITUAL_MATERIAL_CHARLOTTE=EFFECT_EXTRA_RITUAL_COST
 local dgritmat=Duel.GetRitualMaterial
-function Duel.GetRitualMaterial(p)
-	local g=dgritmat(p)
+function Duel.GetRitualMaterial(p,...)
+	local g=dgritmat(p,...)
 	local cg=Duel.GetMatchingGroup(Card.IsHasEffect,p,0,LOCATION_MZONE,nil,EFFECT_EXTRA_RITUAL_COST)
 	g:Merge(cg)
 	return g
